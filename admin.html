@@ -130,20 +130,8 @@
         border: 1px solid #333;
         border-radius: 10px;
     }
-    .importer-section h3 {
-        margin: 0 0 10px 0;
-        color: var(--primary-color);
-    }
-    #catalogForm {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    #catalogFile {
-        width: 100%;
-        color: #fff;
-    }
-    #catalogForm button {
+    .config-toggle {
+        margin-top: 18px;
         border: none;
         border-radius: 8px;
         padding: 12px;
@@ -151,6 +139,33 @@
         color: #fff;
         font-weight: 700;
         cursor: pointer;
+    }
+    .config-panel {
+        display: none;
+    }
+    .config-panel.visible {
+        display: block;
+    }
+    .importer-section h3 {
+        margin: 0 0 10px 0;
+        color: var(--primary-color);
+    }
+    #catalogFile {
+        width: 100%;
+        color: #fff;
+        display: none;
+    }
+    .dropzone {
+        margin-top: 10px;
+        border: 2px dashed var(--primary-color);
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        color: #bbb;
+        cursor: pointer;
+    }
+    .dropzone.dragover {
+        background: rgba(255, 255, 255, 0.06);
     }
     #importStatus {
         margin-top: 10px;
@@ -219,29 +234,31 @@
 
     <div class="admin-container">
         <div id="listaPedidos"></div>
-        <div id="importerSection" class="importer-section">
-            <h3>Importar Catalogo</h3>
-            <form id="catalogForm">
-                <input type="file" id="catalogFile" accept=".csv" required>
-                <button type="submit">SUBIR CSV</button>
-            </form>
-            <div id="importStatus"></div>
-        </div>
-        <div class="brand-section">
-            <h3>Configuracion de Marca</h3>
-            <div class="brand-grid">
-                <input type="file" id="brandLogoInput" accept="image/*">
-                <div class="color-row">
-                    <label for="brandColorInput">Color principal</label>
-                    <input type="color" id="brandColorInput" value="#ff6600">
+        <button id="toggleConfigBtn" class="config-toggle">CONFIGURACION</button>
+        <div id="configPanel" class="config-panel">
+            <div id="importerSection" class="importer-section">
+                <h3>Importar Catalogo</h3>
+                <input type="file" id="catalogFile" accept=".csv,.xlsx,.xls">
+                <div id="catalogDropzone" class="dropzone">Arrastra CSV o Excel aqui, o haz clic para seleccionar</div>
+                <div id="importStatus"></div>
+            </div>
+            <div class="brand-section">
+                <h3>Configuracion de Marca</h3>
+                <div class="brand-grid">
+                    <input type="file" id="brandLogoInput" accept="image/*">
+                    <div class="color-row">
+                        <label for="brandColorInput">Color principal</label>
+                        <input type="color" id="brandColorInput" value="#ff6600">
+                    </div>
+                    <img id="brandLogoPreview" alt="Vista previa del logo" src="logo.png">
+                    <div id="brandStatus"></div>
                 </div>
-                <img id="brandLogoPreview" alt="Vista previa del logo" src="logo.png">
-                <div id="brandStatus"></div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
@@ -251,8 +268,10 @@
         const lockScreen = document.getElementById('lockScreen');
         const pinInput = document.getElementById('pinInput');
         const enterPinBtn = document.getElementById('enterPinBtn');
-        const catalogForm = document.getElementById('catalogForm');
+        const toggleConfigBtn = document.getElementById('toggleConfigBtn');
+        const configPanel = document.getElementById('configPanel');
         const catalogFile = document.getElementById('catalogFile');
+        const catalogDropzone = document.getElementById('catalogDropzone');
         const importStatus = document.getElementById('importStatus');
         const brandLogoInput = document.getElementById('brandLogoInput');
         const brandColorInput = document.getElementById('brandColorInput');
@@ -396,82 +415,43 @@
             };
         }
 
-        function parseCsv(text) {
-            const rows = [];
-            let current = '';
-            let row = [];
-            let inQuotes = false;
-            for (let i = 0; i < text.length; i++) {
-                const ch = text[i];
-                const next = text[i + 1];
-                if (ch === '"' && inQuotes && next === '"') {
-                    current += '"';
-                    i++;
-                    continue;
-                }
-                if (ch === '"') {
-                    inQuotes = !inQuotes;
-                    continue;
-                }
-                if (ch === ',' && !inQuotes) {
-                    row.push(current);
-                    current = '';
-                    continue;
-                }
-                if ((ch === '\n' || ch === '\r') && !inQuotes) {
-                    if (ch === '\r' && next === '\n') i++;
-                    row.push(current);
-                    if (row.some((x) => String(x).trim() !== '')) rows.push(row);
-                    row = [];
-                    current = '';
-                    continue;
-                }
-                current += ch;
-            }
-            if (current.length || row.length) {
-                row.push(current);
-                if (row.some((x) => String(x).trim() !== '')) rows.push(row);
-            }
-            return rows;
-        }
-
         async function importarCancionesDesdeArchivo(file) {
             if (!currentDjId) {
                 setStatus('No se detecto dj en la URL.', true);
                 return;
             }
             setStatus('Procesando archivo...', false);
-            let parsedRows = [];
+            let rows = [];
             try {
-                const text = await file.text();
-                parsedRows = parseCsv(text);
+                const ext = (file.name.split('.').pop() || '').toLowerCase();
+                if (ext === 'csv') {
+                    const text = await file.text();
+                    const wb = XLSX.read(text, { type: 'string' });
+                    const sheet = wb.Sheets[wb.SheetNames[0]];
+                    rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                } else {
+                    const buffer = await file.arrayBuffer();
+                    const wb = XLSX.read(buffer, { type: 'array' });
+                    const sheet = wb.Sheets[wb.SheetNames[0]];
+                    rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                }
             } catch (e) {
                 setStatus('No se pudo leer el archivo.', true);
                 return;
             }
 
-            if (!parsedRows.length) {
-                setStatus('El CSV esta vacio.', true);
+            if (!rows.length) {
+                setStatus('El archivo esta vacio.', true);
                 return;
             }
 
-            const headers = parsedRows[0].map((h) => String(h).trim().toLowerCase());
-            const bodyRows = parsedRows.slice(1);
-            const jsonRows = bodyRows.map((r) => {
-                const obj = {};
-                headers.forEach((h, i) => {
-                    obj[h] = r[i] == null ? '' : String(r[i]).trim();
-                });
-                return obj;
-            });
-
-            const songs = jsonRows.map(mapRowToSong).filter(Boolean);
+            const songs = rows.map(mapRowToSong).filter(Boolean);
             if (!songs.length) {
                 setStatus('No se encontraron canciones validas.', true);
                 return;
             }
 
-            const { error } = await _supabase.from('Canciones').upsert(songs, {
+            const { error } = await _supabase.from('canciones').upsert(songs, {
                 onConflict: 'id_dj,numero',
                 ignoreDuplicates: false
             });
@@ -483,13 +463,32 @@
         }
 
         function setupImporter() {
-            catalogForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const files = catalogFile.files || [];
-                if (!files.length) {
-                    setStatus('Selecciona un archivo CSV.', true);
-                    return;
-                }
+            toggleConfigBtn.addEventListener('click', () => {
+                configPanel.classList.toggle('visible');
+            });
+            catalogDropzone.addEventListener('click', () => catalogFile.click());
+            ['dragenter', 'dragover'].forEach((eventName) => {
+                catalogDropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    catalogDropzone.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach((eventName) => {
+                catalogDropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    catalogDropzone.classList.remove('dragover');
+                });
+            });
+            catalogDropzone.addEventListener('drop', async (e) => {
+                const files = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files : [];
+                if (!files.length) return;
+                await importarCancionesDesdeArchivo(files[0]);
+            });
+            catalogFile.addEventListener('change', async (e) => {
+                const files = e.target.files || [];
+                if (!files.length) return;
                 await importarCancionesDesdeArchivo(files[0]);
                 catalogFile.value = '';
             });
@@ -511,7 +510,7 @@
 
             _supabase
                 .channel('cambios-admin')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'Solicitudes' }, (payload) => {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'solicitudes' }, (payload) => {
                     if (payload.new && payload.new.id_dj !== currentDjId) return;
                     if (payload.old && payload.old.id_dj !== currentDjId) return;
                     cargarPedidos();
@@ -527,7 +526,7 @@
         async function cargarPedidos() {
             if (!currentDjId) return;
             const { data, error } = await _supabase
-                .from('Solicitudes')
+                .from('solicitudes')
                 .select('*')
                 .eq('id_dj', currentDjId)
                 .in('estado', ['pendiente', 'preparate'])
@@ -541,7 +540,7 @@
             let errorTotales = null;
             while (true) {
                 const res = await _supabase
-                    .from('Solicitudes')
+                    .from('solicitudes')
                     .select('id, nombre_usuario, created_at')
                     .eq('id_dj', currentDjId)
                     .order('id', { ascending: true })
@@ -611,7 +610,7 @@
 
         async function avisarPedido(id) {
             const { error } = await _supabase
-                .from('Solicitudes')
+                .from('solicitudes')
                 .update({ estado: 'preparate' })
                 .eq('id_dj', currentDjId)
                 .eq('id', id);
@@ -622,7 +621,7 @@
         async function eliminarPedido(id) {
             if (!confirm('¿Eliminar pedido de la lista?')) return;
             const { error } = await _supabase
-                .from('Solicitudes')
+                .from('solicitudes')
                 .update({ estado: 'completada' })
                 .eq('id_dj', currentDjId)
                 .eq('id', id);

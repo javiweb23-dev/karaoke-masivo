@@ -72,7 +72,7 @@ async function loadBrandingByDj() {
 async function loadSongsByDj() {
     const loading = document.getElementById('loading');
     const { data, error } = await _supabase
-        .from('Canciones')
+        .from('canciones')
         .select('numero, artista, titulo, genero, idioma')
         .eq('id_dj', currentDjId)
         .order('numero', { ascending: true });
@@ -94,7 +94,7 @@ async function updateLiveStatus() {
     const liveSingerText = document.getElementById('liveSingerText');
     if (!liveSingerText) return;
     const { data, error } = await _supabase
-        .from('Solicitudes')
+        .from('solicitudes')
         .select('nombre_usuario')
         .eq('id_dj', currentDjId)
         .eq('estado', 'preparate')
@@ -120,7 +120,7 @@ function startLiveStatusTracking() {
         .channel('live-status-aprobada')
         .on(
             'postgres_changes',
-            { event: '*', schema: 'public', table: 'Solicitudes' },
+            { event: '*', schema: 'public', table: 'solicitudes' },
             (payload) => {
                 if (payload.new && payload.new.id_dj !== currentDjId) return;
                 if (payload.old && payload.old.id_dj !== currentDjId) return;
@@ -312,7 +312,7 @@ async function prepararPedido(number, artist, title) {
     }
 
     const { data: globalDuplicate, error: globalDuplicateError } = await _supabase
-        .from('Solicitudes')
+        .from('solicitudes')
         .select('id')
         .eq('id_dj', currentDjId)
         .eq('numero_cancion', songId)
@@ -330,7 +330,7 @@ async function prepararPedido(number, artist, title) {
     }
 
     const { count: activePendingCount, error: activePendingError } = await _supabase
-        .from('Solicitudes')
+        .from('solicitudes')
         .select('id', { count: 'exact', head: true })
         .eq('id_dj', currentDjId)
         .eq('nombre_usuario', userName)
@@ -347,7 +347,7 @@ async function prepararPedido(number, artist, title) {
     }
 
     const { data, error } = await _supabase
-        .from('Solicitudes')
+        .from('solicitudes')
         .insert([
             { 
                 nombre_usuario: userName, 
@@ -382,7 +382,7 @@ async function prepararPedido(number, artist, title) {
                     { 
                         event: 'UPDATE', 
                         schema: 'public', 
-                        table: 'Solicitudes',
+                        table: 'solicitudes',
                         filter: `id=eq.${idUnico}`
                     },
                     (payload) => {
