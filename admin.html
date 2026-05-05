@@ -279,6 +279,7 @@
         const brandStatus = document.getElementById('brandStatus');
         const currentDjId = detectDjIdFromUrl();
         let colorSaveTimer = null;
+        let realtimeInitialized = false;
 
         function detectDjIdFromUrl() {
             const queryId = new URLSearchParams(window.location.search).get('dj');
@@ -391,6 +392,7 @@
             if (pinInput.value === '1234') {
                 sessionStorage.setItem('admin_access_validado', 'true');
                 desbloquearAdmin();
+                initRealtimeAndData();
                 return;
             }
             alert('Acceso denegado');
@@ -494,11 +496,28 @@
             });
         }
 
+        function initRealtimeAndData() {
+            if (realtimeInitialized) return;
+            realtimeInitialized = true;
+            _supabase
+                .channel('cambios-admin')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'solicitudes' }, (payload) => {
+                    const sameDj =
+                        (payload.new && payload.new.id_dj === currentDjId) ||
+                        (payload.old && payload.old.id_dj === currentDjId);
+                    if (sameDj) cargarPedidos();
+                })
+                .subscribe();
+            cargarPedidos();
+        }
+
         if (!currentDjId) {
             bloquearPorDjFaltante();
         } else {
+            loadBrandingByDj();
             if (sessionStorage.getItem('admin_access_validado') === 'true') {
                 desbloquearAdmin();
+                initRealtimeAndData();
             } else {
                 pinInput.focus();
             }
@@ -508,19 +527,8 @@
                 if (e.key === 'Enter') validarPin();
             });
 
-            _supabase
-                .channel('cambios-admin')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'solicitudes' }, (payload) => {
-                    if (payload.new && payload.new.id_dj !== currentDjId) return;
-                    if (payload.old && payload.old.id_dj !== currentDjId) return;
-                    cargarPedidos();
-                })
-                .subscribe();
-
-            loadBrandingByDj();
             setupImporter();
             setupBrandingControls();
-            cargarPedidos();
         }
 
         async function cargarPedidos() {

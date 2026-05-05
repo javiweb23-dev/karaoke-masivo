@@ -19,9 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('loading').innerText = 'No se detecto el DJ en la URL.';
         return;
     }
+    await loadBrandingByDj();
     setupShareQr();
     setupStickyOffsets();
-    await loadBrandingByDj();
     await loadSongsByDj();
     syncLangToggleButton();
     applyFilters();
