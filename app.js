@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
+const SUPABASE_URL = 'https://vqirrwlznzbooiwlksly.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
