@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro DJ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .reg-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 102, 0, 0.12), transparent 55%), #000;
+        }
+        .reg-card {
+            width: 100%;
+            max-width: 420px;
+            background: #0d0d0d;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 28px 24px 26px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+        }
+        .reg-card h1 {
+            margin: 0 0 6px 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #fff;
+        }
+        .reg-card p.sub {
+            margin: 0 0 22px 0;
+            font-size: 0.9rem;
+            color: #888;
+            line-height: 1.45;
+        }
+        .reg-field {
+            margin-bottom: 16px;
+        }
+        .reg-field label {
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .reg-field input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #141414;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .reg-field input:focus {
+            border-color: var(--primary-color, #ff6600);
+            box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.12);
+        }
+        .reg-field input::placeholder {
+            color: #555;
+        }
+        .reg-submit {
+            width: 100%;
+            margin-top: 8px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary-color, #ff6600);
+            color: #000;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: filter 0.15s ease, transform 0.1s ease;
+        }
+        .reg-submit:hover {
+            filter: brightness(1.08);
+        }
+        .reg-submit:active {
+            transform: scale(0.99);
+        }
+        .reg-submit:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .reg-msg {
+            margin-top: 14px;
+            min-height: 22px;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .reg-msg.err { color: #ff6b6b; }
+        .reg-msg.ok { color: #69db7c; }
+    </style>
+</head>
+<body>
+    <div class="reg-page">
+        <div class="reg-card">
+            <h1>Crear cuenta DJ</h1>
+            <p class="sub">Registra tu espacio para gestionar pedidos y catálogo desde el panel.</p>
+            <form id="regForm" novalidate>
+                <div class="reg-field">
+                    <label for="idDj">ID de DJ</label>
+                    <input id="idDj" name="idDj" type="text" autocomplete="username" maxlength="64" placeholder="ej: bar_central" pattern="[A-Za-z0-9_]+" required>
+                </div>
+                <div class="reg-field">
+                    <label for="nombreNegocio">Nombre del negocio</label>
+                    <input id="nombreNegocio" name="nombreNegocio" type="text" maxlength="120" placeholder="Nombre visible" required>
+                </div>
+                <div class="reg-field">
+                    <label for="pin">PIN (4 dígitos)</label>
+                    <input id="pin" name="pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="••••" autocomplete="new-password" required>
+                </div>
+                <button type="submit" class="reg-submit" id="regBtn">REGISTRAR</button>
+                <div class="reg-msg" id="regMsg" aria-live="polite"></div>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://vqirrwlznzbooiwlksly.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
+        const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const form = document.getElementById('regForm');
+        const regBtn = document.getElementById('regBtn');
+        const regMsg = document.getElementById('regMsg');
+
+        function showMsg(text, ok) {
+            regMsg.textContent = text;
+            regMsg.className = 'reg-msg ' + (ok ? 'ok' : 'err');
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            regMsg.textContent = '';
+            regMsg.className = 'reg-msg';
+            const idRaw = document.getElementById('idDj').value.trim();
+            const idDj = idRaw.toLowerCase();
+            const nombreNegocio = document.getElementById('nombreNegocio').value.trim();
+            const pin = document.getElementById('pin').value.trim();
+            if (!/^[a-z0-9_]+$/.test(idDj)) {
+                showMsg('El ID solo puede usar letras, números y guion bajo.', false);
+                return;
+            }
+            if (!/^[0-9]{4}$/.test(pin)) {
+                showMsg('El PIN debe tener exactamente 4 dígitos.', false);
+                return;
+            }
+            if (!nombreNegocio) {
+                showMsg('Indica el nombre del negocio.', false);
+                return;
+            }
+            regBtn.disabled = true;
+            const { data: exist, error: errExist } = await supa
+                .from('usuarios_dj')
+                .select('id_dj')
+                .eq('id_dj', idDj)
+                .limit(1)
+                .maybeSingle();
+            if (errExist) {
+                showMsg(errExist.message, false);
+                regBtn.disabled = false;
+                return;
+            }
+            if (exist && exist.id_dj) {
+                showMsg('Ese ID de DJ ya está en uso. Elige otro.', false);
+                regBtn.disabled = false;
+                return;
+            }
+            const { error: errIns } = await supa.from('usuarios_dj').insert([{
+                id_dj: idDj,
+                nombre_negocio: nombreNegocio,
+                pin_acceso: pin,
+                logo_url: null,
+                color_principal: null
+            }]);
+            if (errIns) {
+                showMsg(errIns.message, false);
+                regBtn.disabled = false;
+                return;
+            }
+            localStorage.setItem('id_dj', idDj);
+            window.location.href = 'admin.html?dj=' + encodeURIComponent(idDj);
+        });
+    </script>
+</body>
+</html>

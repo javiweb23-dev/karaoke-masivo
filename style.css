@@ -4,6 +4,10 @@
     box-sizing: border-box;
 }
 
+html {
+    background-color: #000;
+}
+
 body {
     background-color: #000;
     color: #fff;
@@ -15,7 +19,7 @@ body {
 }
 
 :root {
-    --primary-color: #111;
+    --primary-color: #000;
 }
 
 .header {

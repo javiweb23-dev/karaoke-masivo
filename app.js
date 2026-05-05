@@ -49,6 +49,8 @@ function detectDjIdFromUrl() {
 function setBranding(logoUrl, primaryColor) {
     const color = /^#[0-9a-f]{6}$/i.test(String(primaryColor || '')) ? primaryColor : DEFAULT_PRIMARY_COLOR;
     document.documentElement.style.setProperty('--primary-color', color);
+    if (currentDjId) localStorage.setItem('color_personalizado_' + currentDjId, color);
+    else localStorage.setItem('color_personalizado', color);
     const logo = document.querySelector('.logo');
     if (logo) {
         logo.src = logoUrl || DEFAULT_LOGO_URL;
