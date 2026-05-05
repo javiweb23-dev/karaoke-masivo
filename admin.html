@@ -157,6 +157,53 @@
         min-height: 20px;
         font-size: 14px;
     }
+    .brand-section {
+        margin-top: 18px;
+        padding: 14px;
+        background: #111;
+        border: 1px solid #333;
+        border-radius: 10px;
+    }
+    .brand-section h3 {
+        margin: 0 0 10px 0;
+        color: var(--primary-color);
+    }
+    .brand-grid {
+        display: grid;
+        gap: 10px;
+    }
+    #brandLogoInput {
+        width: 100%;
+        color: #fff;
+    }
+    .color-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    #brandColorInput {
+        width: 56px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+    }
+    #brandLogoPreview {
+        width: 100%;
+        max-width: 220px;
+        max-height: 90px;
+        object-fit: contain;
+        background: #000;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 6px;
+    }
+    #brandStatus {
+        margin-top: 8px;
+        min-height: 20px;
+        font-size: 14px;
+    }
     </style>
 </head>
 <body>
@@ -180,6 +227,18 @@
             </form>
             <div id="importStatus"></div>
         </div>
+        <div class="brand-section">
+            <h3>Configuracion de Marca</h3>
+            <div class="brand-grid">
+                <input type="file" id="brandLogoInput" accept="image/*">
+                <div class="color-row">
+                    <label for="brandColorInput">Color principal</label>
+                    <input type="color" id="brandColorInput" value="#ff6600">
+                </div>
+                <img id="brandLogoPreview" alt="Vista previa del logo" src="logo.png">
+                <div id="brandStatus"></div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -195,7 +254,12 @@
         const catalogForm = document.getElementById('catalogForm');
         const catalogFile = document.getElementById('catalogFile');
         const importStatus = document.getElementById('importStatus');
+        const brandLogoInput = document.getElementById('brandLogoInput');
+        const brandColorInput = document.getElementById('brandColorInput');
+        const brandLogoPreview = document.getElementById('brandLogoPreview');
+        const brandStatus = document.getElementById('brandStatus');
         const currentDjId = detectDjIdFromUrl();
+        let colorSaveTimer = null;
 
         function detectDjIdFromUrl() {
             const queryId = new URLSearchParams(window.location.search).get('dj');
@@ -208,20 +272,89 @@
             importStatus.style.color = isError ? '#ff4d4f' : '#9be564';
         }
 
+        function setBrandStatus(msg, isError) {
+            brandStatus.textContent = msg;
+            brandStatus.style.color = isError ? '#ff4d4f' : '#9be564';
+        }
+
         function setBranding(primaryColor) {
             const color = /^#[0-9a-f]{6}$/i.test(String(primaryColor || '')) ? primaryColor : DEFAULT_PRIMARY_COLOR;
             document.documentElement.style.setProperty('--primary-color', color);
+            brandColorInput.value = color;
+        }
+
+        async function saveBranding(payload) {
+            const { error } = await _supabase
+                .from('usuarios_dj')
+                .upsert([{ id_dj: currentDjId, ...payload }], { onConflict: 'id_dj' });
+            return error;
         }
 
         async function loadBrandingByDj() {
             if (!currentDjId) return;
-            const { data } = await _supabase
-                .from('Usuarios_DJ')
+            const { data, error } = await _supabase
+                .from('usuarios_dj')
                 .select('logo_url, color_principal')
                 .eq('id_dj', currentDjId)
                 .limit(1)
                 .maybeSingle();
-            setBranding(data && data.color_principal ? data.color_principal : DEFAULT_PRIMARY_COLOR);
+            if (error || !data) {
+                setBranding(DEFAULT_PRIMARY_COLOR);
+                brandLogoPreview.src = 'logo.png';
+                return;
+            }
+            setBranding(data.color_principal || DEFAULT_PRIMARY_COLOR);
+            brandLogoPreview.src = data.logo_url || 'logo.png';
+        }
+
+        async function handleLogoUpload(file) {
+            if (!file) return;
+            const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+            const safeExt = ext.replace(/[^a-z0-9]/g, '') || 'png';
+            const filePath = `${currentDjId}/logo-${Date.now()}.${safeExt}`;
+            setBrandStatus('Subiendo logo...', false);
+            const { error: uploadError } = await _supabase.storage
+                .from('logos')
+                .upload(filePath, file, { upsert: true });
+            if (uploadError) {
+                setBrandStatus('Error al subir logo: ' + uploadError.message, true);
+                return;
+            }
+            const { data } = _supabase.storage.from('logos').getPublicUrl(filePath);
+            const publicUrl = data && data.publicUrl ? data.publicUrl : '';
+            if (!publicUrl) {
+                setBrandStatus('No se pudo obtener la URL publica.', true);
+                return;
+            }
+            const saveError = await saveBranding({ logo_url: publicUrl });
+            if (saveError) {
+                setBrandStatus('Error al guardar logo: ' + saveError.message, true);
+                return;
+            }
+            brandLogoPreview.src = publicUrl;
+            setBrandStatus('Logo actualizado correctamente.', false);
+        }
+
+        function setupBrandingControls() {
+            brandLogoInput.addEventListener('change', async (e) => {
+                const files = e.target.files || [];
+                if (!files.length) return;
+                await handleLogoUpload(files[0]);
+                brandLogoInput.value = '';
+            });
+            brandColorInput.addEventListener('input', () => {
+                const color = brandColorInput.value;
+                setBranding(color);
+                clearTimeout(colorSaveTimer);
+                colorSaveTimer = setTimeout(async () => {
+                    const saveError = await saveBranding({ color_principal: color });
+                    if (saveError) {
+                        setBrandStatus('Error al guardar color: ' + saveError.message, true);
+                        return;
+                    }
+                    setBrandStatus('Color actualizado.', false);
+                }, 200);
+            });
         }
 
         function bloquearPorDjFaltante() {
@@ -387,6 +520,7 @@
 
             loadBrandingByDj();
             setupImporter();
+            setupBrandingControls();
             cargarPedidos();
         }
 

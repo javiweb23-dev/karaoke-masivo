@@ -57,7 +57,7 @@ function setBranding(logoUrl, primaryColor) {
 
 async function loadBrandingByDj() {
     const { data, error } = await _supabase
-        .from('Usuarios_DJ')
+        .from('usuarios_dj')
         .select('logo_url, color_principal')
         .eq('id_dj', currentDjId)
         .limit(1)
