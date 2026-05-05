@@ -65,6 +65,12 @@
         .reg-field input::placeholder {
             color: #555;
         }
+        .reg-field-hint {
+            margin: 8px 0 0 0;
+            font-size: 0.78rem;
+            color: #5a5a5a;
+            line-height: 1.35;
+        }
         .reg-submit {
             width: 100%;
             margin-top: 8px;
@@ -110,6 +116,7 @@
                 <div class="reg-field">
                     <label for="idDj">ID de DJ</label>
                     <input id="idDj" name="idDj" type="text" autocomplete="username" maxlength="64" placeholder="ej: bar_central" pattern="[A-Za-z0-9_]+" required>
+                    <p class="reg-field-hint">(Ejemplo: dj_marcos o barlacosta. No uses espacios).</p>
                 </div>
                 <div class="reg-field">
                     <label for="nombreNegocio">Nombre del negocio</label>
@@ -132,6 +139,15 @@
         const form = document.getElementById('regForm');
         const regBtn = document.getElementById('regBtn');
         const regMsg = document.getElementById('regMsg');
+        const idDjInput = document.getElementById('idDj');
+        idDjInput.addEventListener('input', () => {
+            const pos = idDjInput.selectionStart;
+            const next = idDjInput.value.replace(/ /g, '_');
+            if (next !== idDjInput.value) {
+                idDjInput.value = next;
+                idDjInput.setSelectionRange(pos, pos);
+            }
+        });
 
         function showMsg(text, ok) {
             regMsg.textContent = text;
