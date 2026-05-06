@@ -1,1447 +1,309 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karaoke Latino Pro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <style>
-        * { box-sizing: border-box; }
-        :root {
-            --bg: #050505;
-            --panel: #101010;
-            --line: #232323;
-            --text: #ffffff;
-            --muted: #b7b7b7;
-            --accent: #ff6600;
-            --ok: #22c55e;
-        }
-        html, body {
-            margin: 0;
-            padding: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-        .wrap {
-            width: min(1180px, calc(100% - 34px));
-            margin: 0 auto;
-        }
-        .btn-main {
-            border: none;
-            border-radius: 14px;
-            background: var(--accent);
-            color: #000;
-            text-decoration: none;
-            font-weight: 900;
-            letter-spacing: 0.02em;
-            padding: 15px 24px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.15s ease, filter 0.15s ease;
-            cursor: pointer;
-        }
-        .btn-main:hover {
-            filter: brightness(1.08);
-            transform: translateY(-1px);
-        }
-        .section {
-            padding: 70px 0;
-            border-bottom: 1px solid #141414;
-        }
-        h2 {
-            margin: 0 0 14px;
-            text-align: center;
-            font-size: clamp(1.55rem, 4.8vw, 2.45rem);
-            font-weight: 900;
-            letter-spacing: -0.02em;
-            line-height: 1.16;
-            text-transform: uppercase;
-        }
-        .lead {
-            margin: 0 auto 32px;
-            max-width: 760px;
-            text-align: center;
-            color: var(--muted);
-            line-height: 1.65;
-        }
-        .hero {
-            position: relative;
-            border-bottom: 1px solid #151515;
-            background-image:
-                linear-gradient(180deg, rgba(5, 5, 5, 0.88) 0%, rgba(5, 5, 5, 0.94) 46%, rgba(5, 5, 5, 0.98) 100%),
-                url('https://images.unsplash.com/photo-1540039155732-68473638c410?q=80&w=1920');
-            background-size: cover;
-            background-position: center;
-        }
-        .hero-top {
-            min-height: 78px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-        }
-        .brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: var(--text);
-            font-weight: 900;
-            letter-spacing: 0.02em;
-        }
-        .brand img {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            object-fit: cover;
-        }
-        .hero-grid {
-            display: grid;
-            gap: 28px;
-            padding: 14px 0 56px;
-        }
-        .hero h1 {
-            margin: 0 0 16px;
-            font-size: clamp(1.95rem, 6.1vw, 4rem);
-            line-height: 1.03;
-            letter-spacing: -0.03em;
-            text-transform: uppercase;
-            font-weight: 900;
-            max-width: 760px;
-        }
-        .hero h1 .accent {
-            color: var(--accent);
-        }
-        .hero-benefits {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-            margin: 0 0 20px;
-            max-width: 650px;
-        }
-        .hero-benefit {
-            background: rgba(15, 15, 15, 0.94);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 12px 8px;
-            text-align: center;
-            color: #c7c7c7;
-            font-size: 0.86rem;
-        }
-        .hero-benefit i {
-            display: block;
-            color: var(--accent);
-            font-size: 1.08rem;
-            margin-bottom: 7px;
-        }
-        .hero-checks {
-            margin-top: 13px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px 14px;
-            color: #cfd3cf;
-            font-size: 0.88rem;
-        }
-        .hero-checks span i {
-            color: var(--ok);
-            margin-right: 6px;
-        }
-        .phone-shell {
-            justify-self: center;
-            width: min(370px, 100%);
-            border-radius: 30px;
-            background: linear-gradient(180deg, #2a2a2a 0%, #0d0d0d 100%);
-            border: 1px solid #2e2e2e;
-            padding: 10px;
-            box-shadow: 0 28px 78px rgba(0, 0, 0, 0.72);
-        }
-        .phone-screen {
-            border-radius: 22px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 102, 0, 0.42);
-        }
-        .phone-screen img {
-            width: 100%;
-            display: block;
-            aspect-ratio: 9 / 19.5;
-            object-fit: cover;
-        }
-        .pain-list {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-            display: grid;
-            gap: 12px;
-        }
-        .pain-list li {
-            border: 1px solid var(--line);
-            border-radius: 13px;
-            background: #0d0d0d;
-            display: grid;
-            grid-template-columns: 34px 1fr;
-            gap: 10px;
-            align-items: start;
-            padding: 14px;
-            color: #bbbbbb;
-            line-height: 1.58;
-        }
-        .pain-list i {
-            color: var(--accent);
-            font-size: 1.12rem;
-            margin-top: 3px;
-        }
-        .goals-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
-        .goal {
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: #0d0d0d;
-            padding: 18px 14px;
-            text-align: center;
-        }
-        .goal i {
-            color: var(--accent);
-            font-size: 1.55rem;
-            margin-bottom: 10px;
-            text-shadow: 0 0 12px rgba(255, 102, 0, 0.32);
-        }
-        .goal h3 {
-            margin: 0 0 7px;
-            color: var(--accent);
-            font-size: 1rem;
-        }
-        .goal p {
-            margin: 0;
-            color: #ababab;
-            line-height: 1.55;
-            font-size: 0.9rem;
-        }
-        .demo-grid {
-            display: grid;
-            gap: 24px;
-            align-items: center;
-        }
-        .demo-video {
-            width: min(100%, 430px);
-            justify-self: center;
-            border-radius: 22px;
-            border: 1px solid rgba(255, 102, 0, 0.42);
-            overflow: hidden;
-            background: #0a0a0a;
-        }
-        .demo-video video {
-            width: 100%;
-            aspect-ratio: 9 / 16;
-            display: block;
-            object-fit: cover;
-        }
-        .demo-copy h3 {
-            margin: 0 0 12px;
-            font-size: clamp(1.3rem, 3.9vw, 2rem);
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-        }
-        .demo-copy p {
-            margin: 0;
-            color: #acacac;
-            line-height: 1.7;
-            max-width: 620px;
-        }
-        .steps-wrap {
-            position: relative;
-        }
-        .steps-wrap::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 29px;
-            height: 2px;
-            display: none;
-            background: linear-gradient(90deg, rgba(255, 102, 0, 0), rgba(255, 102, 0, 0.5), rgba(255, 102, 0, 0));
-        }
-        .steps-grid {
-            display: grid;
-            gap: 14px;
-        }
-        .step {
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: #0d0d0d;
-            padding: 14px;
-            text-align: center;
-            position: relative;
-        }
-        .step i {
-            width: 44px;
-            height: 44px;
-            border-radius: 999px;
-            background: rgba(255, 102, 0, 0.18);
-            color: var(--accent);
-            display: grid;
-            place-items: center;
-            margin: 0 auto 10px;
-            font-size: 1rem;
-        }
-        .step h4 {
-            margin: 0 0 7px;
-            font-size: 1rem;
-        }
-        .step p {
-            margin: 0;
-            color: #ababab;
-            font-size: 0.9rem;
-            line-height: 1.54;
-        }
-        .pricing-card {
-            max-width: 560px;
-            margin: 0 auto;
-            border: 1px solid #242424;
-            border-radius: 24px;
-            background: linear-gradient(180deg, #111 0%, #090909 100%);
-            padding: 34px 24px;
-            text-align: center;
-            box-shadow: 0 28px 88px rgba(0, 0, 0, 0.78);
-        }
-        .pricing-mini {
-            margin: 0;
-            color: #a8a8a8;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-        .price {
-            margin: 10px 0 8px;
-            font-size: clamp(2.8rem, 9vw, 4.2rem);
-            line-height: 1;
-            font-weight: 900;
-            letter-spacing: -0.04em;
-        }
-        .price span {
-            font-size: 1.08rem;
-            color: #8e8e8e;
-            font-weight: 700;
-        }
-        .checks {
-            margin: 14px 0 22px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-        .check {
-            border-radius: 999px;
-            border: 1px solid #242424;
-            background: #111;
-            padding: 8px 12px;
-            color: #d7d7d7;
-            font-size: 0.9rem;
-        }
-        .check i {
-            color: var(--ok);
-            margin-right: 6px;
-        }
-        .paypal-title {
-            margin: 0 0 12px;
-            color: var(--accent);
-            font-weight: 800;
-        }
-        .pay-wrap {
-            max-width: 360px;
-            margin: 0 auto;
-            border-radius: 40px;
-            padding: 12px;
-            position: relative;
-        }
-        .pay-wrap::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 42px;
-            background: linear-gradient(120deg, #ff6600, #ff8a3d, #ff6600);
-            filter: blur(16px);
-            opacity: 0.65;
-            z-index: 0;
-            animation: pulse 2.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.45; }
-            50% { opacity: 0.82; }
-        }
-        .pay-inner {
-            position: relative;
-            z-index: 1;
-            border-radius: 34px;
-            background: #000;
-            padding: 4px;
-        }
-        #paypal-button-container-P-0RV59459KB864673KNH5JMYY {
-            width: 100%;
-        }
-        .testimonials {
-            display: grid;
-            gap: 14px;
-        }
-        .testimonial {
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: #0d0d0d;
-            padding: 16px;
-        }
-        .testimonial .head {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 7px;
-            color: #fff;
-            font-weight: 700;
-        }
-        .testimonial .head i {
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
-            display: grid;
-            place-items: center;
-            background: rgba(255, 102, 0, 0.18);
-            color: var(--accent);
-        }
-        .stars {
-            color: var(--accent);
-            letter-spacing: 0.06em;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-        .testimonial p {
-            margin: 0;
-            color: #ababab;
-            line-height: 1.57;
-        }
-        .faq {
-            max-width: 880px;
-            margin: 0 auto;
-            display: grid;
-            gap: 10px;
-        }
-        .faq details {
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            background: #0d0d0d;
-            padding: 12px 14px;
-        }
-        .faq summary {
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            color: #fff;
-        }
-        .faq summary i {
-            color: var(--accent);
-            transition: transform 0.2s ease;
-        }
-        .faq details[open] summary i {
-            transform: rotate(180deg);
-        }
-        .faq p {
-            margin: 10px 0 0;
-            color: #ababab;
-            line-height: 1.62;
-        }
-        .final-cta {
-            padding: 72px 0 80px;
-            text-align: center;
-        }
-        .final-cta h2 {
-            margin: 0 auto 18px;
-            max-width: 920px;
-            font-size: clamp(1.55rem, 5.1vw, 2.65rem);
-            line-height: 1.15;
-            letter-spacing: -0.02em;
-            text-transform: uppercase;
-        }
-        .footer-note {
-            border-top: 1px solid #111;
-            color: #5f5f5f;
-            text-align: center;
-            font-size: 0.82rem;
-            padding: 26px 0 34px;
-        }
-        @media (min-width: 980px) {
-            .hero-grid {
-                grid-template-columns: 1.1fr 0.9fr;
-                align-items: center;
-            }
-            .goals-grid {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-            }
-            .demo-grid {
-                grid-template-columns: 0.4fr 0.6fr;
-            }
-            .steps-wrap::before {
-                display: block;
-            }
-            .steps-grid {
-                grid-template-columns: repeat(5, minmax(0, 1fr));
-            }
-            .testimonials {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karaoke Latino</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    font-family:'Poppins',sans-serif;
+    background:#000;
+    color:#fff;
+}
+
+/* NAV */
+.nav{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 8%;
+    position:fixed;
+    width:100%;
+    background:rgba(0,0,0,0.8);
+    backdrop-filter:blur(10px);
+    z-index:1000;
+}
+.logo{color:#ff7a00;font-weight:800;font-size:22px}
+.nav a{
+    color:#ccc;
+    margin-left:20px;
+    text-decoration:none;
+}
+.nav .cta{
+    background:#ff7a00;
+    padding:10px 18px;
+    border-radius:6px;
+    color:#fff;
+}
+
+/* HERO */
+.hero{
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 8%;
+    background:linear-gradient(rgba(0,0,0,.85),rgba(0,0,0,.95)),
+    url('bg.jpg') center/cover;
+}
+
+.hero-text{max-width:550px}
+
+.hero h1{
+    font-size:52px;
+    line-height:1.1;
+}
+
+.highlight{
+    color:#ff7a00;
+}
+
+.hero p{
+    color:#bbb;
+    margin-top:15px;
+}
+
+.btn{
+    display:inline-block;
+    margin-top:25px;
+    background:linear-gradient(45deg,#ff6a00,#ff9a00);
+    padding:16px 30px;
+    border-radius:8px;
+    font-weight:600;
+    text-decoration:none;
+    color:#fff;
+    box-shadow:0 0 20px rgba(255,122,0,.6);
+}
+
+/* PHONE */
+.phone{
+    width:320px;
+    border-radius:30px;
+    overflow:hidden;
+    box-shadow:0 0 40px rgba(255,122,0,.4);
+}
+.phone img{width:100%}
+
+/* SECTION */
+.section{
+    padding:100px 8%;
+    text-align:center;
+}
+
+.section h2{
+    font-size:34px;
+}
+
+.gradient-text{
+    background:linear-gradient(90deg,#ff7a00,#ff00cc);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* GRID */
+.grid{
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin-top:40px;
+    flex-wrap:wrap;
+}
+
+.card{
+    background:#111;
+    padding:25px;
+    border-radius:12px;
+    width:240px;
+}
+
+/* PROBLEM */
+.problem{
+    display:flex;
+    gap:50px;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.problem ul{
+    text-align:left;
+    list-style:none;
+}
+
+.problem li{
+    margin-bottom:10px;
+    color:#bbb;
+}
+
+/* PRICE */
+.price{
+    font-size:70px;
+    color:#ff7a00;
+}
+
+/* BADGE */
+.badge{
+    display:inline-block;
+    background:#ff0066;
+    padding:8px 15px;
+    border-radius:20px;
+    margin-top:10px;
+}
+
+/* TESTIMONIOS */
+.testimonials{
+    display:flex;
+    gap:20px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.testimonial{
+    background:#111;
+    padding:20px;
+    border-radius:12px;
+    width:280px;
+}
+
+/* FAQ */
+.faq{
+    max-width:700px;
+    margin:auto;
+    text-align:left;
+}
+
+.faq-item{
+    background:#111;
+    margin-bottom:10px;
+    padding:15px;
+    border-radius:8px;
+}
+
+/* FOOTER CTA */
+.final{
+    background:linear-gradient(90deg,#ff7a00,#ff0066);
+    padding:40px;
+    text-align:center;
+}
+
+.final a{
+    background:#fff;
+    color:#000;
+    padding:15px 25px;
+    border-radius:6px;
+    text-decoration:none;
+    font-weight:bold;
+}
+</style>
 </head>
+
 <body>
-    <section class="hero">
-        <div class="wrap hero-top">
-            <a class="brand" href="#">
-                <img src="/logo.png" alt="Karaoke Latino">
-                <span>Karaoke Latino</span>
-            </a>
-            <a href="#pago" class="btn-main">EMPEZAR AHORA</a>
-        </div>
-        <div class="wrap hero-grid">
-            <div>
-                <h1>CONVIERTE TU KARAOKE EN UNA <span class="accent">MÁQUINA</span> DE PEDIDOS EN VIVO</h1>
-                <div class="hero-benefits">
-                    <div class="hero-benefit"><i class="fa-regular fa-users"></i>Más pedidos</div>
-                    <div class="hero-benefit"><i class="fa-regular fa-chart-bar"></i>Clientes activos</div>
-                    <div class="hero-benefit"><i class="fa-regular fa-dollar-sign"></i>Más ingresos</div>
-                </div>
-                <a href="#pago" class="btn-main">EMPEZAR AHORA</a>
-                <div class="hero-checks">
-                    <span><i class="fa-solid fa-check"></i>Configuras en minutos</span>
-                    <span><i class="fa-solid fa-check"></i>Sin contratos largos</span>
-                    <span><i class="fa-solid fa-check"></i>Control total en vivo</span>
-                </div>
-            </div>
-            <div class="phone-shell">
-                <div class="phone-screen">
-                    <img src="/screenshot1.jpg" alt="App Karaoke Latino en celular">
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section class="section">
-        <div class="wrap">
-            <h2>¿QUÉ PASA CUANDO NO TIENES ESTA APP?</h2>
-            <ul class="pain-list">
-                <li><i class="fa-regular fa-circle-xmark"></i><span>Se pierden solicitudes, la gente se frustra, baja la participación.</span></li>
-                <li><i class="fa-regular fa-circle-xmark"></i><span>El orden de la cola se rompe, el DJ gasta energía en apagar incendios.</span></li>
-                <li><i class="fa-regular fa-circle-xmark"></i><span>El consumo cae, cuando el ambiente se enfría la barra factura menos.</span></li>
-                <li><i class="fa-regular fa-circle-xmark"></i><span>El show pierde ritmo, aparecen pausas incómodas y errores repetidos.</span></li>
-            </ul>
-        </div>
-    </section>
+<!-- NAV -->
+<div class="nav">
+    <div class="logo">KaraokeLatino</div>
+    <div>
+        <a href="#">Inicio</a>
+        <a href="#">Ventajas</a>
+        <a href="#">Cómo funciona</a>
+        <a href="#">Precios</a>
+        <a href="#">FAQ</a>
+        <a href="#" class="cta">Empezar</a>
+    </div>
+</div>
 
-    <section class="section">
-        <div class="wrap">
-            <h2>LO QUE VAS A LOGRAR DESDE EL PRIMER DÍA</h2>
-            <p class="lead">Resultados medibles, más control operativo, mejor experiencia para cada mesa.</p>
-            <div class="goals-grid">
-                <article class="goal">
-                    <i class="fa-regular fa-music"></i>
-                    <h3>Más pedidos</h3>
-                    <p>Más canciones en cola, más actividad durante toda la noche.</p>
-                </article>
-                <article class="goal">
-                    <i class="fa-regular fa-dollar-sign"></i>
-                    <h3>Más consumo</h3>
-                    <p>Un público activo compra más, la barra se mantiene movida.</p>
-                </article>
-                <article class="goal">
-                    <i class="fa-regular fa-sliders"></i>
-                    <h3>Más control</h3>
-                    <p>Gestionas el flujo con claridad, sin caos ni improvisación.</p>
-                </article>
-                <article class="goal">
-                    <i class="fa-regular fa-face-smile"></i>
-                    <h3>Mejor experiencia</h3>
-                    <p>Tu marca se percibe profesional, la gente quiere volver.</p>
-                </article>
-            </div>
-        </div>
-    </section>
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-text">
+        <h1>
+            Convierte tu karaoke en una<br>
+            <span class="highlight">máquina de pedidos en vivo</span>
+        </h1>
 
-    <section class="section">
-        <div class="wrap demo-grid">
-            <div class="demo-video">
-                <video src="/video.mp4" autoplay loop muted playsinline></video>
-            </div>
-            <div class="demo-copy">
-                <h3>Tu cliente escanea, elige, envía, tú decides el ritmo del show.</h3>
-                <p>La plataforma está diseñada para ser intuitiva. Cada acción es rápida, el panel responde en tiempo real, la música fluye sin fricción. El resultado se nota en la energía del local, también en la caja.</p>
-            </div>
-        </div>
-    </section>
+        <p>Permite que tus clientes pidan canciones desde su celular y aumenta el consumo sin esfuerzo.</p>
 
-    <section class="section">
-        <div class="wrap">
-            <h2>CÓMO FUNCIONA</h2>
-            <p class="lead">Cinco pasos claros, de la mesa al micrófono en segundos.</p>
-            <div class="steps-wrap">
-                <div class="steps-grid">
-                    <article class="step">
-                        <i class="fa-regular fa-qrcode"></i>
-                        <h4>Escanean QR</h4>
-                        <p>Acceso inmediato desde el móvil.</p>
-                    </article>
-                    <article class="step">
-                        <i class="fa-regular fa-magnifying-glass"></i>
-                        <h4>Buscan canción</h4>
-                        <p>Encuentran rápido y envían.</p>
-                    </article>
-                    <article class="step">
-                        <i class="fa-regular fa-list-check"></i>
-                        <h4>Entra al panel</h4>
-                        <p>Tú lo ves en orden y al instante.</p>
-                    </article>
-                    <article class="step">
-                        <i class="fa-regular fa-bell"></i>
-                        <h4>Aviso al cantante</h4>
-                        <p>Notificas cuando va a subir.</p>
-                    </article>
-                    <article class="step">
-                        <i class="fa-regular fa-waveform-lines"></i>
-                        <h4>Fluye la música</h4>
-                        <p>Más ritmo, más consumo, mejor noche.</p>
-                    </article>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" id="pago">
-        <div class="wrap">
-            <div class="pricing-card">
-                <p class="pricing-mini">TODO ESTO POR SOLO</p>
-                <div class="price">$19 <span>/MES</span></div>
-                <div class="checks">
-                    <span class="check"><i class="fa-solid fa-check"></i>Sin contratos</span>
-                    <span class="check"><i class="fa-solid fa-check"></i>Cancela cuando quieras</span>
-                </div>
-                <p class="paypal-title">EMPEZAR AHORA CON PayPal</p>
-                <div class="pay-wrap">
-                    <div class="pay-inner">
-                        <div id="paypal-button-container-P-0RV59459KB864673KNH5JMYY"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="wrap">
-            <h2>YA LA USAN DJS Y LOCALES COMO TÚ</h2>
-            <p class="lead">Resultados consistentes en operación, consumo y experiencia de cliente.</p>
-            <div class="testimonials">
-                <article class="testimonial">
-                    <div class="head"><i class="fa-regular fa-quote-left"></i><span>DJ Marcos, Bar Central</span></div>
-                    <div class="stars">★★★★★</div>
-                    <p>La cola se ordenó desde la primera noche, más participación, más consumo, cero caos.</p>
-                </article>
-                <article class="testimonial">
-                    <div class="head"><i class="fa-regular fa-quote-left"></i><span>DJ Carla, La Costa</span></div>
-                    <div class="stars">★★★★★</div>
-                    <p>El panel me da control total, el ambiente subió, la gente se queda más tiempo.</p>
-                </article>
-                <article class="testimonial">
-                    <div class="head"><i class="fa-regular fa-quote-left"></i><span>DJ Alex, Zona Norte</span></div>
-                    <div class="stars">★★★★★</div>
-                    <p>Se paga solo, la experiencia se ve premium, el local lo nota en ingresos.</p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="wrap">
-            <h2>FAQ</h2>
-            <div class="faq">
-                <details>
-                    <summary><span>¿Mis clientes deben instalar algo?</span><i class="fa-regular fa-chevron-down"></i></summary>
-                    <p>No. Escanean, entran, piden. Todo funciona desde el navegador.</p>
-                </details>
-                <details>
-                    <summary><span>¿Puedo usar mi branding?</span><i class="fa-regular fa-chevron-down"></i></summary>
-                    <p>Sí. Configuras logo y color desde el panel admin en minutos.</p>
-                </details>
-                <details>
-                    <summary><span>¿Puedo cancelar cuando quiera?</span><i class="fa-regular fa-chevron-down"></i></summary>
-                    <p>Sí. Sin contratos largos, mantienes total flexibilidad.</p>
-                </details>
-                <details>
-                    <summary><span>¿Soporta noches con alta demanda?</span><i class="fa-regular fa-chevron-down"></i></summary>
-                    <p>Sí. El flujo está preparado para volumen alto de pedidos en vivo.</p>
-                </details>
-            </div>
-        </div>
-    </section>
-
-    <section class="final-cta">
-        <div class="wrap">
-            <h2>EMPIEZA HOY Y CONVIERTE TU KARAOKE EN UNA EXPERIENCIA PROFESIONAL</h2>
-            <a href="#pago" class="btn-main">EMPEZAR AHORA</a>
-        </div>
-    </section>
-
-    <div class="footer-note">
-        &copy; 2026 ROI Agencia de Marketing. Todos los derechos reservados.
+        <a href="#" class="btn">ACTIVAR MI KARAOKE INTELIGENTE</a>
     </div>
 
-    <script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
-    <script>
-        paypal.Buttons({
-            style: {
-                shape: 'pill',
-                color: 'gold',
-                layout: 'horizontal',
-                label: 'subscribe'
-            },
-            createSubscription: function(data, actions) {
-                return actions.subscription.create({
-                    plan_id: 'P-0RV59459KB864673KNH5JMYY'
-                });
-            },
-            onApprove: function(data, actions) {
-                alert('Suscripción exitosa: ' + data.subscriptionID);
-            }
-        }).render('#paypal-button-container-P-0RV59459KB864673KNH5JMYY');
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karaoke Latino Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            background: #000;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-        .wrap {
-            width: min(1140px, calc(100% - 32px));
-            margin: 0 auto;
-        }
-        .section {
-            position: relative;
-            padding: 64px 0;
-            border-bottom: 1px solid #131313;
-            isolation: isolate;
-        }
-        .section::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-            background:
-                radial-gradient(circle at 10% 10%, rgba(255, 102, 0, 0.10), transparent 34%),
-                radial-gradient(circle at 85% 15%, rgba(255, 102, 0, 0.07), transparent 36%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
-            opacity: 0.9;
-        }
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: rgba(0, 0, 0, 0.88);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid #171717;
-        }
-        .header-row {
-            min-height: 76px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .brand {
-            color: #fff;
-            text-decoration: none;
-            font-size: 1.12rem;
-            font-weight: 900;
-            letter-spacing: 0.02em;
-        }
-        .btn-main {
-            border: none;
-            border-radius: 12px;
-            background: #ff6600;
-            color: #000;
-            text-decoration: none;
-            font-weight: 900;
-            letter-spacing: 0.02em;
-            padding: 14px 22px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.15s ease, filter 0.15s ease;
-            cursor: pointer;
-        }
-        .btn-main:hover {
-            filter: brightness(1.06);
-            transform: translateY(-1px);
-        }
-        .hero {
-            padding: 54px 0 48px;
-            border-bottom: 1px solid #131313;
-        }
-        .hero-grid {
-            display: grid;
-            gap: 28px;
-        }
-        .hero h1 {
-            margin: 0 0 14px;
-            font-size: clamp(1.9rem, 6vw, 3.65rem);
-            line-height: 1.04;
-            font-weight: 900;
-            letter-spacing: -0.03em;
-            text-transform: uppercase;
-        }
-        .hero .accent {
-            color: #ff6600;
-        }
-        .hero p {
-            margin: 0 0 22px;
-            color: #a8a8a8;
-            line-height: 1.65;
-            max-width: 650px;
-        }
-        .quick-benefits {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .quick-item {
-            border: 1px solid #212121;
-            background: #0d0d0d;
-            border-radius: 12px;
-            padding: 12px 10px;
-            text-align: center;
-            color: #c3c3c3;
-            font-size: 0.88rem;
-        }
-        .quick-item .icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 999px;
-            margin: 0 auto 8px;
-            display: grid;
-            place-items: center;
-            background: rgba(255, 102, 0, 0.18);
-            color: #ff6600;
-            font-weight: 900;
-        }
-        .mockup {
-            justify-self: center;
-            width: min(360px, 100%);
-            border-radius: 30px;
-            padding: 10px;
-            background: linear-gradient(180deg, #232323 0%, #0b0b0b 100%);
-            border: 1px solid #2b2b2b;
-            box-shadow: 0 24px 72px rgba(0, 0, 0, 0.72);
-        }
-        .mockup-inner {
-            border-radius: 22px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 102, 0, 0.45);
-        }
-        .mockup-inner img {
-            width: 100%;
-            display: block;
-            aspect-ratio: 9 / 19.5;
-            object-fit: cover;
-        }
-        h2 {
-            margin: 0 0 14px;
-            text-align: center;
-            font-size: clamp(1.55rem, 5vw, 2.35rem);
-            line-height: 1.14;
-            letter-spacing: -0.02em;
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-        .lead {
-            margin: 0 auto 30px;
-            max-width: 690px;
-            text-align: center;
-            color: #9f9f9f;
-            line-height: 1.62;
-        }
-        .pain-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: grid;
-            gap: 12px;
-            max-width: 900px;
-            margin-inline: auto;
-        }
-        .pain-list li {
-            border: 1px solid #212121;
-            border-radius: 12px;
-            background: #0e0e0e;
-            color: #bebebe;
-            padding: 14px;
-            display: grid;
-            grid-template-columns: 34px 1fr;
-            gap: 10px;
-            align-items: start;
-        }
-        .warn {
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
-            background: rgba(255, 102, 0, 0.18);
-            color: #ff6600;
-            display: grid;
-            place-items: center;
-            font-weight: 900;
-        }
-        .goals-grid {
-            display: grid;
-            gap: 14px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        .goal {
-            border: 1px solid #1f1f1f;
-            background: #0d0d0d;
-            border-radius: 14px;
-            padding: 16px 14px;
-            text-align: center;
-        }
-        .goal .icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 999px;
-            margin: 0 auto 10px;
-            background: rgba(255, 102, 0, 0.18);
-            color: #ff6600;
-            display: grid;
-            place-items: center;
-            font-weight: 900;
-        }
-        .goal h3 {
-            margin: 0 0 7px;
-            color: #ff6600;
-            font-size: 1rem;
-        }
-        .goal p {
-            margin: 0;
-            color: #a8a8a8;
-            line-height: 1.58;
-            font-size: 0.9rem;
-        }
-        .demo-grid {
-            display: grid;
-            gap: 24px;
-            align-items: center;
-        }
-        .demo-video {
-            width: min(100%, 420px);
-            justify-self: center;
-            border-radius: 20px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 102, 0, 0.45);
-            background: #0a0a0a;
-        }
-        .demo-video video {
-            width: 100%;
-            aspect-ratio: 9 / 16;
-            object-fit: cover;
-            display: block;
-        }
-        .demo-copy h3 {
-            margin: 0 0 10px;
-            font-size: clamp(1.3rem, 4vw, 2rem);
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-        }
-        .demo-copy p {
-            margin: 0;
-            color: #a7a7a7;
-            line-height: 1.7;
-        }
-        .steps-wrap {
-            position: relative;
-        }
-        .steps-wrap::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 26px;
-            height: 2px;
-            background: linear-gradient(90deg, rgba(255, 102, 0, 0), rgba(255, 102, 0, 0.5), rgba(255, 102, 0, 0));
-            display: none;
-        }
-        .steps-grid {
-            display: grid;
-            gap: 14px;
-        }
-        .step {
-            border: 1px solid #1f1f1f;
-            border-radius: 14px;
-            background: #0d0d0d;
-            padding: 14px;
-            text-align: center;
-        }
-        .step .dot {
-            width: 44px;
-            height: 44px;
-            border-radius: 999px;
-            margin: 0 auto 10px;
-            background: #ff6600;
-            color: #000;
-            font-weight: 900;
-            display: grid;
-            place-items: center;
-        }
-        .step h4 {
-            margin: 0 0 6px;
-            font-size: 1rem;
-        }
-        .step p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: #ababab;
-            line-height: 1.56;
-        }
-        .pricing-card {
-            max-width: 560px;
-            margin: 0 auto;
-            background: linear-gradient(180deg, #101010 0%, #090909 100%);
-            border: 1px solid #222;
-            border-radius: 22px;
-            padding: 34px 24px;
-            text-align: center;
-            box-shadow: 0 26px 86px rgba(0, 0, 0, 0.78);
-        }
-        .pricing-card .mini {
-            margin: 0;
-            color: #a4a4a4;
-            text-transform: uppercase;
-            letter-spacing: 0.11em;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-        .price {
-            margin: 10px 0 8px;
-            font-size: clamp(2.8rem, 9vw, 4.2rem);
-            line-height: 1;
-            letter-spacing: -0.04em;
-            font-weight: 900;
-        }
-        .price span {
-            font-size: 1.05rem;
-            color: #8c8c8c;
-            font-weight: 700;
-        }
-        .checks {
-            margin: 14px 0 22px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .check {
-            border-radius: 999px;
-            border: 1px solid #242424;
-            background: #111;
-            padding: 8px 12px;
-            color: #d4d4d4;
-            font-size: 0.9rem;
-        }
-        .check b {
-            color: #ff6600;
-        }
-        .paypal-title {
-            margin: 0 0 12px;
-            color: #ff6600;
-            font-weight: 800;
-        }
-        .pay-wrap {
-            max-width: 360px;
-            margin: 0 auto;
-            border-radius: 40px;
-            padding: 12px;
-            position: relative;
-        }
-        .pay-wrap::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 42px;
-            background: linear-gradient(120deg, #ff6600, #ff8a3f, #ff6600);
-            filter: blur(16px);
-            opacity: 0.65;
-            z-index: 0;
-            animation: pulse 2.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.45; }
-            50% { opacity: 0.82; }
-        }
-        .pay-inner {
-            position: relative;
-            z-index: 1;
-            border-radius: 34px;
-            background: #000;
-            padding: 4px;
-        }
-        #paypal-button-container-P-0RV59459KB864673KNH5JMYY {
-            width: 100%;
-        }
-        .testimonials {
-            display: grid;
-            gap: 14px;
-        }
-        .testimonial {
-            border: 1px solid #1f1f1f;
-            border-radius: 14px;
-            background: #0d0d0d;
-            padding: 16px;
-        }
-        .testimonial .top {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-        .quote-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
-            background: rgba(255, 102, 0, 0.18);
-            color: #ff6600;
-            display: grid;
-            place-items: center;
-            font-weight: 900;
-        }
-        .testimonial b {
-            font-size: 0.96rem;
-        }
-        .stars {
-            color: #ff6600;
-            letter-spacing: 0.06em;
-            margin: 2px 0 8px;
-        }
-        .testimonial p {
-            margin: 0;
-            color: #a8a8a8;
-            line-height: 1.58;
-        }
-        .faq {
-            max-width: 860px;
-            margin: 0 auto;
-            display: grid;
-            gap: 10px;
-        }
-        .faq details {
-            background: #0d0d0d;
-            border: 1px solid #1f1f1f;
-            border-radius: 12px;
-            padding: 12px 14px;
-        }
-        .faq summary {
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .faq p {
-            margin: 10px 0 0;
-            color: #a7a7a7;
-            line-height: 1.6;
-        }
-        .final-cta {
-            text-align: center;
-            padding: 66px 0 74px;
-        }
-        .final-cta h2 {
-            margin: 0 auto 18px;
-            max-width: 930px;
-            font-size: clamp(1.5rem, 5vw, 2.55rem);
-            line-height: 1.15;
-            letter-spacing: -0.02em;
-            text-transform: uppercase;
-        }
-        .footer-note {
-            border-top: 1px solid #111;
-            padding: 26px 0 34px;
-            text-align: center;
-            color: #5e5e5e;
-            font-size: 0.82rem;
-        }
-        @media (min-width: 980px) {
-            .hero-grid {
-                grid-template-columns: 1.14fr 0.86fr;
-                align-items: center;
-            }
-            .goals-grid {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-            }
-            .demo-grid {
-                grid-template-columns: 0.4fr 0.6fr;
-            }
-            .demo-video {
-                width: 100%;
-                max-width: 100%;
-            }
-            .steps-wrap::before {
-                display: block;
-            }
-            .steps-grid {
-                grid-template-columns: repeat(5, minmax(0, 1fr));
-            }
-            .testimonials {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-        }
-    </style>
-</head>
-<body>
-    <header class="header">
-        <div class="wrap header-row">
-            <a href="#" class="brand">Karaoke Latino</a>
-            <a href="#pago" class="btn-main">EMPEZAR AHORA</a>
-        </div>
-    </header>
+    <div class="phone">
+        <img src="app.jpg">
+    </div>
+</section>
 
-    <section class="hero">
-        <div class="wrap hero-grid">
-            <div>
-                <h1>CONVIERTE TU KARAOKE EN UNA <span class="accent">MÁQUINA</span> DE PEDIDOS EN VIVO</h1>
-                <p>Más control, más energía en el local, más consumo por mesa. Todo en una experiencia elegante, rápida y simple.</p>
-                <div class="quick-benefits">
-                    <div class="quick-item">
-                        <div class="icon">+</div>
-                        Más pedidos
-                    </div>
-                    <div class="quick-item">
-                        <div class="icon">+</div>
-                        Clientes activos
-                    </div>
-                    <div class="quick-item">
-                        <div class="icon">+</div>
-                        Más ingresos
-                    </div>
-                </div>
-                <a href="#pago" class="btn-main">EMPEZAR AHORA</a>
-            </div>
-            <div class="mockup">
-                <div class="mockup-inner">
-                    <img src="/screenshot1.jpeg" alt="Mockup celular karaoke latino">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="wrap">
-            <h2>¿QUÉ PASA CUANDO NO TIENES ESTA APP?</h2>
-            <ul class="pain-list">
-                <li><span class="warn">!</span><span>Pedidos perdidos, las mesas se cansan y dejan de participar.</span></li>
-                <li><span class="warn">!</span><span>Desorden en la cola, el DJ pierde foco y el show cae de ritmo.</span></li>
-                <li><span class="warn">!</span><span>Menos consumo, cuando la experiencia no engancha la barra factura menos.</span></li>
-                <li><span class="warn">!</span><span>Estrés operativo, todo en papel o memoria termina en errores.</span></li>
-            </ul>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="wrap">
-            <h2>LO QUE VAS A LOGRAR DESDE EL PRIMER DÍA</h2>
-            <p class="lead">Impacto real en operación, experiencia de cliente y facturación del local.</p>
-            <div class="goals-grid">
-                <article class="goal">
-                    <div class="icon">1</div>
-                    <h3>Más pedidos</h3>
-                    <p>Entradas constantes, menos fricción para pedir canciones.</p>
-                </article>
-                <article class="goal">
-                    <div class="icon">2</div>
-                    <h3>Más consumo</h3>
-                    <p>El local se mantiene activo, el público permanece más tiempo.</p>
-                </article>
-                <article class="goal">
-                    <div class="icon">3</div>
-                    <h3>Más control</h3>
-                    <p>Panel claro para ordenar la cola y avisar al instante.</p>
-                </article>
-                <article class="goal">
-                    <div class="icon">4</div>
-                    <h3>Mejor experiencia</h3>
-                    <p>El cliente siente ritmo, participación y profesionalismo.</p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="wrap">
-            <h2>DEMO EN VIDEO</h2>
-            <div class="demo-grid">
-                <div class="demo-video">
-                    <video src="/video.mp4" autoplay loop muted playsinline poster="/screenshot1.jpeg"></video>
-                </div>
-                <div class="demo-copy">
-                    <h3>Se ve simple. Se siente profesional.</h3>
-                    <p>Tu cliente escanea, elige y envía en segundos. Tú recibes pedidos ordenados en tiempo real. Todo el flujo está pensado para que el show avance sin pausas, con más participación y con una experiencia moderna en cada mesa.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="wrap">
-            <h2>CÓMO FUNCIONA</h2>
-            <p class="lead">Cinco pasos, una noche más ordenada y más rentable.</p>
-            <div class="steps-wrap">
-                <div class="steps-grid">
-                    <article class="step">
-                        <div class="dot">1</div>
-                        <h4>Escanean QR</h4>
-                        <p>Entran desde el móvil, sin instalaciones.</p>
-                    </article>
-                    <article class="step">
-                        <div class="dot">2</div>
-                        <h4>Eligen canción</h4>
-                        <p>Buscan rápido, envían en un toque.</p>
-                    </article>
-                    <article class="step">
-                        <div class="dot">3</div>
-                        <h4>Entra al panel</h4>
-                        <p>Tú ves cada solicitud en vivo.</p>
-                    </article>
-                    <article class="step">
-                        <div class="dot">4</div>
-                        <h4>Aviso al cantante</h4>
-                        <p>Notificación clara, menos confusión.</p>
-                    </article>
-                    <article class="step">
-                        <div class="dot">5</div>
-                        <h4>Fluye la música</h4>
-                        <p>Más ritmo, mejor ambiente, más consumo.</p>
-                    </article>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" id="pago">
-        <div class="wrap">
-            <div class="pricing-card">
-                <p class="mini">TODO ESTO POR SOLO</p>
-                <div class="price">$19<span>/MES</span></div>
-                <div class="checks">
-                    <span class="check"><b>✓</b> Sin contratos</span>
-                    <span class="check"><b>✓</b> Cancela cuando quieras</span>
-                </div>
-                <p class="paypal-title">EMPEZAR AHORA CON PayPal</p>
-                <div class="pay-wrap">
-                    <div class="pay-inner">
-                        <div id="paypal-button-container-P-0RV59459KB864673KNH5JMYY"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="wrap">
-            <h2>YA LA USAN DJS Y LOCALES COMO TÚ</h2>
-            <p class="lead">Testimonios de alto impacto, resultado directo en pedidos y operación.</p>
-            <div class="testimonials">
-                <article class="testimonial">
-                    <div class="top"><span class="quote-icon">“</span><b>DJ Marcos, Bar Central</b></div>
-                    <div class="stars">★★★★★</div>
-                    <p>La lista fluye sola, hay más participación, el consumo subió desde la primera noche.</p>
-                </article>
-                <article class="testimonial">
-                    <div class="top"><span class="quote-icon">“</span><b>DJ Carla, La Costa</b></div>
-                    <div class="stars">★★★★★</div>
-                    <p>Control total del show, menos caos, más tiempo para animar y mantener el ambiente arriba.</p>
-                </article>
-                <article class="testimonial">
-                    <div class="top"><span class="quote-icon">“</span><b>DJ Alex, Zona Norte</b></div>
-                    <div class="stars">★★★★★</div>
-                    <p>Se paga solo, más pedidos, más consumo, más profesionalismo frente al cliente.</p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="wrap">
-            <h2>FAQ</h2>
-            <div class="faq">
-                <details>
-                    <summary>¿Necesito instalar algo en los teléfonos de mis clientes?</summary>
-                    <p>No. Todo funciona desde el navegador, en segundos.</p>
-                </details>
-                <details>
-                    <summary>¿Puedo personalizar el sistema para mi marca?</summary>
-                    <p>Sí. Cambias color y logo desde tu panel admin.</p>
-                </details>
-                <details>
-                    <summary>¿Qué pasa si quiero detener la suscripción?</summary>
-                    <p>Puedes cancelar cuando quieras, sin contratos largos.</p>
-                </details>
-                <details>
-                    <summary>¿Sirve para eventos grandes y locales llenos?</summary>
-                    <p>Sí. Está pensado para alto volumen de solicitudes en vivo.</p>
-                </details>
-            </div>
-        </div>
-    </section>
-
-    <section class="final-cta">
-        <div class="wrap">
-            <h2>EMPIEZA HOY Y CONVIERTE TU KARAOKE EN UNA EXPERIENCIA PROFESIONAL</h2>
-            <a href="#pago" class="btn-main">EMPEZAR AHORA</a>
-        </div>
-    </section>
-
-    <div class="footer-note">
-        &copy; 2026 ROI Agencia de Marketing. Todos los derechos reservados.
+<!-- PROBLEMA / SOLUCION -->
+<section class="section problem">
+    <div>
+        <h2>¿Qué pasa cuando <span style="color:#ff0066">NO tienes esta app?</span></h2>
+        <ul>
+            <li>Pedidos desordenados</li>
+            <li>Clientes molestos</li>
+            <li>Pérdida de tiempo</li>
+            <li>Menos ingresos</li>
+        </ul>
     </div>
 
-    <script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
-    <script>
-        paypal.Buttons({
-            style: {
-                shape: 'pill',
-                color: 'gold',
-                layout: 'horizontal',
-                label: 'subscribe'
-            },
-            createSubscription: function(data, actions) {
-                return actions.subscription.create({
-                    plan_id: 'P-0RV59459KB864673KNH5JMYY'
-                });
-            },
-            onApprove: function(data, actions) {
-                alert('Suscripción exitosa: ' + data.subscriptionID);
-            }
-        }).render('#paypal-button-container-P-0RV59459KB864673KNH5JMYY');
-    </script>
+    <div>
+        <h2>La solución:<br><span class="gradient-text">Pedidos en tiempo real</span></h2>
+        <p>Todo organizado automáticamente para el DJ.</p>
+    </div>
+</section>
+
+<!-- BENEFICIOS -->
+<section class="section">
+    <h2>Lo que vas a lograr</h2>
+
+    <div class="grid">
+        <div class="card">Más pedidos</div>
+        <div class="card">Más consumo</div>
+        <div class="card">Más control</div>
+        <div class="card">Mejor experiencia</div>
+    </div>
+</section>
+
+<!-- PRECIO -->
+<section class="section">
+    <h2>Todo esto por solo</h2>
+    <div class="price">$19</div>
+    <p>/mes</p>
+
+    <div class="badge">Precio de lanzamiento</div>
+
+    <br><br>
+
+    <a href="#" class="btn">EMPEZAR AHORA CON PAYPAL</a>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="section">
+    <h2>Ya la usan DJs como tú</h2>
+
+    <div class="testimonials">
+        <div class="testimonial">“Más pedidos y más ventas”</div>
+        <div class="testimonial">“Se paga sola en una noche”</div>
+        <div class="testimonial">“Súper fácil de usar”</div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="section">
+    <h2>Preguntas frecuentes</h2>
+
+    <div class="faq">
+        <div class="faq-item">¿Necesito instalar algo?</div>
+        <div class="faq-item">¿Funciona en cualquier celular?</div>
+        <div class="faq-item">¿Puedo cancelar cuando quiera?</div>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final">
+    <h2>Empieza hoy</h2>
+    <a href="#">ACTIVAR MI KARAOKE INTELIGENTE</a>
+</div>
+
 </body>
 </html>
