@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Karaoke Latino</title>
+<title>Karaoke Latino Pro</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
     font-family:'Poppins',sans-serif;
-    background:#000;
+    background:#050505;
     color:#fff;
 }
 
-/* NAV */
 .nav{
     display:flex;
     justify-content:space-between;
@@ -26,12 +26,15 @@ body{
     background:rgba(0,0,0,0.8);
     backdrop-filter:blur(10px);
     z-index:1000;
+    border-bottom:1px solid #111;
 }
-.logo{color:#ff7a00;font-weight:800;font-size:22px}
+.logo{color:#ff7a00;font-weight:800;font-size:22px;display:flex;align-items:center;gap:10px;}
 .nav a{
     color:#ccc;
     margin-left:20px;
     text-decoration:none;
+    font-size:14px;
+    font-weight:600;
 }
 .nav .cta{
     background:#ff7a00;
@@ -40,22 +43,21 @@ body{
     color:#fff;
 }
 
-/* HERO */
 .hero{
-    height:100vh;
+    min-height:100vh;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 8%;
-    background:linear-gradient(rgba(0,0,0,.85),rgba(0,0,0,.95)),
-    url('./bg.jpg') center/cover;
+    padding:120px 8% 60px;
+    background:linear-gradient(rgba(5,5,5,0.9),rgba(5,5,5,0.95)), url('/bg.jpg') center/cover;
 }
 
-.hero-text{max-width:550px}
+.hero-text{max-width:600px}
 
 .hero h1{
-    font-size:52px;
+    font-size:clamp(35px, 5vw, 52px);
     line-height:1.1;
+    margin-bottom:20px;
 }
 
 .highlight{
@@ -64,38 +66,84 @@ body{
 
 .hero p{
     color:#bbb;
-    margin-top:15px;
+    font-size:18px;
+    margin-bottom:30px;
+}
+
+.hero-stats{
+    display:flex;
+    gap:30px;
+    margin-bottom:30px;
+}
+
+.stat-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:10px;
+}
+
+.stat-item i{
+    font-size:28px;
+    color:#ff7a00;
+}
+
+.stat-item span{
+    font-size:12px;
+    font-weight:600;
+    color:#ddd;
+    text-transform:uppercase;
 }
 
 .btn{
     display:inline-block;
-    margin-top:25px;
     background:linear-gradient(45deg,#ff6a00,#ff9a00);
-    padding:16px 30px;
+    padding:18px 35px;
     border-radius:8px;
-    font-weight:600;
+    font-weight:800;
+    font-size:16px;
     text-decoration:none;
     color:#fff;
-    box-shadow:0 0 20px rgba(255,122,0,.6);
+    box-shadow:0 0 25px rgba(255,122,0,.4);
+    transition:transform 0.3s;
 }
 
-/* PHONE */
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.hero-checks{
+    display:flex;
+    gap:20px;
+    margin-top:20px;
+    font-size:12px;
+    color:#888;
+}
+
+.hero-checks i{
+    color:#00ff00;
+    margin-right:5px;
+}
+
 .phone{
-    width:320px;
-    border-radius:30px;
+    width:100%;
+    max-width:320px;
+    border-radius:35px;
     overflow:hidden;
-    box-shadow:0 0 40px rgba(255,122,0,.4);
+    box-shadow:0 0 50px rgba(255,122,0,.2);
+    border:4px solid #222;
 }
-.phone img{width:100%}
+.phone img{width:100%;display:block;}
 
-/* SECTION */
 .section{
     padding:100px 8%;
     text-align:center;
 }
 
 .section h2{
-    font-size:34px;
+    font-size:38px;
+    margin-bottom:20px;
 }
 
 .gradient-text{
@@ -104,57 +152,144 @@ body{
     -webkit-text-fill-color:transparent;
 }
 
-/* GRID */
+.problem{
+    display:flex;
+    gap:60px;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    background:#0a0a0a;
+}
+
+.problem-list{
+    text-align:left;
+    list-style:none;
+    max-width:400px;
+}
+
+.problem-list li{
+    margin-bottom:20px;
+    color:#bbb;
+    font-size:16px;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    background:#111;
+    padding:15px 20px;
+    border-radius:8px;
+}
+
+.problem-list i{
+    color:#ff0066;
+    font-size:20px;
+}
+
 .grid{
     display:flex;
     justify-content:center;
     gap:30px;
-    margin-top:40px;
+    margin-top:50px;
     flex-wrap:wrap;
 }
 
 .card{
     background:#111;
-    padding:25px;
-    border-radius:12px;
-    width:240px;
+    padding:40px 25px;
+    border-radius:16px;
+    width:260px;
+    border:1px solid #222;
+    transition:border-color 0.3s;
 }
 
-/* PROBLEM */
-.problem{
+.card:hover{
+    border-color:#ff7a00;
+}
+
+.card i{
+    font-size:40px;
+    color:#ff7a00;
+    margin-bottom:20px;
+    filter:drop-shadow(0 0 10px rgba(255,122,0,0.5));
+}
+
+.card h3{
+    font-size:18px;
+    margin-bottom:10px;
+}
+
+.card p{
+    font-size:14px;
+    color:#888;
+}
+
+.video-section{
+    background:#080808;
     display:flex;
-    gap:50px;
     align-items:center;
     justify-content:center;
+    gap:60px;
     flex-wrap:wrap;
-}
-
-.problem ul{
     text-align:left;
-    list-style:none;
 }
 
-.problem li{
-    margin-bottom:10px;
+.video-container{
+    width:280px;
+    border-radius:30px;
+    overflow:hidden;
+    box-shadow:0 0 40px rgba(255,122,0,.2);
+    border:4px solid #222;
+}
+
+.video-container video{
+    width:100%;
+    display:block;
+}
+
+.video-text{
+    max-width:450px;
+}
+
+.video-text h2{
+    text-align:left;
+    font-size:34px;
+}
+
+.video-text p{
     color:#bbb;
+    font-size:18px;
+    line-height:1.6;
+    margin-bottom:20px;
 }
 
-/* PRICE */
+.price-container{
+    background:#0a0a0a;
+    border:1px solid #222;
+    border-radius:20px;
+    padding:50px;
+    max-width:500px;
+    margin:0 auto;
+    position:relative;
+}
+
 .price{
-    font-size:70px;
+    font-size:80px;
     color:#ff7a00;
+    font-weight:800;
+    line-height:1;
+    margin:20px 0;
 }
 
-/* BADGE */
 .badge{
     display:inline-block;
     background:#ff0066;
     padding:8px 15px;
     border-radius:20px;
-    margin-top:10px;
+    font-size:12px;
+    font-weight:bold;
+    text-transform:uppercase;
+    letter-spacing:1px;
 }
 
-/* TESTIMONIOS */
 .testimonials{
     display:flex;
     gap:20px;
@@ -164,48 +299,82 @@ body{
 
 .testimonial{
     background:#111;
-    padding:20px;
+    padding:30px;
     border-radius:12px;
-    width:280px;
+    width:300px;
+    text-align:left;
+    border:1px solid #222;
 }
 
-/* FAQ */
+.testimonial i{
+    color:#ffb400;
+    margin-bottom:15px;
+}
+
+.testimonial p{
+    color:#ccc;
+    font-size:14px;
+    font-style:italic;
+}
+
 .faq{
     max-width:700px;
-    margin:auto;
+    margin:40px auto 0;
     text-align:left;
 }
 
 .faq-item{
     background:#111;
-    margin-bottom:10px;
-    padding:15px;
+    margin-bottom:15px;
+    padding:20px;
     border-radius:8px;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    border:1px solid #222;
 }
 
-/* FOOTER CTA */
+.faq-item i{
+    color:#ff7a00;
+}
+
 .final{
     background:linear-gradient(90deg,#ff7a00,#ff0066);
-    padding:40px;
+    padding:60px 20px;
     text-align:center;
+}
+
+.final h2{
+    font-size:40px;
+    margin-bottom:30px;
 }
 
 .final a{
     background:#fff;
     color:#000;
-    padding:15px 25px;
-    border-radius:6px;
+    padding:18px 35px;
+    border-radius:8px;
     text-decoration:none;
-    font-weight:bold;
+    font-weight:800;
+    font-size:18px;
+    display:inline-block;
+}
+
+@media (max-width: 768px) {
+    .hero { flex-direction: column; text-align: center; padding-top: 150px; }
+    .hero-stats { justify-content: center; }
+    .hero-checks { justify-content: center; }
+    .phone { margin-top: 50px; }
+    .video-section { text-align: center; }
+    .video-text h2 { text-align: center; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
 <div class="nav">
-    <div class="logo">KaraokeLatino</div>
+    <div class="logo"><i class="fa-solid fa-microphone-lines"></i> KaraokeLatino</div>
     <div>
         <a href="#">Inicio</a>
         <a href="#">Ventajas</a>
@@ -216,7 +385,6 @@ body{
     </div>
 </div>
 
-<!-- HERO -->
 <section class="hero">
     <div class="hero-text">
         <h1>
@@ -226,84 +394,185 @@ body{
 
         <p>Permite que tus clientes pidan canciones desde su celular y aumenta el consumo sin esfuerzo.</p>
 
-        <a href="#" class="btn">ACTIVAR MI KARAOKE INTELIGENTE</a>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <i class="fa-solid fa-users"></i>
+                <span>Más pedidos</span>
+            </div>
+            <div class="stat-item">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Clientes activos</span>
+            </div>
+            <div class="stat-item">
+                <i class="fa-solid fa-dollar-sign"></i>
+                <span>Más ingresos</span>
+            </div>
+        </div>
+
+        <a href="#precio" class="btn">ACTIVAR MI KARAOKE INTELIGENTE</a>
+
+        <div class="hero-checks">
+            <span><i class="fa-solid fa-check-circle"></i> Sin instalación</span>
+            <span><i class="fa-solid fa-check-circle"></i> Funciona en cualquier celular</span>
+        </div>
     </div>
 
     <div class="phone">
-        <img src="./app.jpg">
+        <img src="/screenshot1.jpg" alt="Karaoke App">
     </div>
 </section>
 
-<!-- PROBLEMA / SOLUCION -->
 <section class="section problem">
     <div>
         <h2>¿Qué pasa cuando <span style="color:#ff0066">NO tienes esta app?</span></h2>
-        <ul>
-            <li>Pedidos desordenados</li>
-            <li>Clientes molestos</li>
-            <li>Pérdida de tiempo</li>
-            <li>Menos ingresos</li>
+        <ul class="problem-list">
+            <li><i class="fa-solid fa-times-circle"></i> Pedidos desordenados y repetidos</li>
+            <li><i class="fa-solid fa-times-circle"></i> Clientes molestos porque no escuchan su turno</li>
+            <li><i class="fa-solid fa-times-circle"></i> El DJ pierde tiempo organizando canciones</li>
+            <li><i class="fa-solid fa-times-circle"></i> Menos interacción y menos consumo</li>
         </ul>
     </div>
 
     <div>
         <h2>La solución:<br><span class="gradient-text">Pedidos en tiempo real</span></h2>
-        <p>Todo organizado automáticamente para el DJ.</p>
+        <p style="color:#bbb; max-width:300px; margin:auto;">Tus clientes hacen sus pedidos desde su celular y tú los recibes organizados automáticamente.</p>
     </div>
 </section>
 
-<!-- BENEFICIOS -->
+<section class="section video-section">
+    <div class="video-container">
+        <video src="/video.mp4" autoplay loop muted playsinline></video>
+    </div>
+    <div class="video-text">
+        <h2>Mira cómo la música fluye sola</h2>
+        <p>Un vistazo rápido a la experiencia que vivirán tus clientes desde sus teléfonos. Cero fricción, búsquedas instantáneas y un catálogo siempre actualizado en la palma de su mano.</p>
+        <a href="#precio" class="btn">PROBAR AHORA</a>
+    </div>
+</section>
+
 <section class="section">
-    <h2>Lo que vas a lograr</h2>
+    <h2>Lo que vas a lograr desde el <span class="highlight">primer día</span></h2>
 
     <div class="grid">
-        <div class="card">Más pedidos</div>
-        <div class="card">Más consumo</div>
-        <div class="card">Más control</div>
-        <div class="card">Mejor experiencia</div>
+        <div class="card">
+            <i class="fa-solid fa-music"></i>
+            <h3>Más pedidos</h3>
+            <p>Tus clientes participan más sin depender del DJ.</p>
+        </div>
+        <div class="card">
+            <i class="fa-solid fa-dollar-sign"></i>
+            <h3>Más consumo</h3>
+            <p>Más canciones significa más bebidas y más ingresos.</p>
+        </div>
+        <div class="card">
+            <i class="fa-solid fa-sliders-h"></i>
+            <h3>Más control</h3>
+            <p>Administra absolutamente todo desde un solo lugar.</p>
+        </div>
+        <div class="card">
+            <i class="fa-solid fa-smile"></i>
+            <h3>Mejor experiencia</h3>
+            <p>Ambiente más dinámico, moderno y profesional.</p>
+        </div>
     </div>
 </section>
 
-<!-- PRECIO -->
-<section class="section">
-    <h2>Todo esto por solo</h2>
-    <div class="price">$19</div>
-    <p>/mes</p>
+<section class="section" id="precio">
+    <div class="price-container">
+        <div class="badge">Sin contratos ocultos</div>
+        <h2>Todo esto por solo</h2>
+        <div class="price">$19 <span style="font-size:20px; color:#888;">/mes</span></div>
+        
+        <ul style="list-style:none; text-align:left; margin:30px 0; color:#ccc;">
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:#00ff00; margin-right:10px;"></i> Cancela cuando quieras</li>
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:#00ff00; margin-right:10px;"></i> Funciona desde el primer día</li>
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:#00ff00; margin-right:10px;"></i> Recupera tu inversión en una noche</li>
+        </ul>
 
-    <div class="badge">Precio de lanzamiento</div>
-
-    <br><br>
-
-    <a href="#" class="btn">EMPEZAR AHORA CON PAYPAL</a>
+        <div id="paypal-button-container-P-0RV59459KB864673KNH5JMYY" style="width:100%; margin-top:20px;"></div>
+    </div>
 </section>
 
-<!-- TESTIMONIOS -->
 <section class="section">
-    <h2>Ya la usan DJs como tú</h2>
+    <h2>Ya la usan DJs y locales como tú</h2>
 
     <div class="testimonials">
-        <div class="testimonial">“Más pedidos y más ventas”</div>
-        <div class="testimonial">“Se paga sola en una noche”</div>
-        <div class="testimonial">“Súper fácil de usar”</div>
+        <div class="testimonial">
+            <div>
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            </div>
+            <p>“Mis clientes piden más canciones y el ambiente ha mejorado un montón.”</p>
+            <h4 style="margin-top:15px; color:#ff7a00;">DJ CABEL</h4>
+        </div>
+        <div class="testimonial">
+            <div>
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            </div>
+            <p>“Más pedidos, más tragos vendidos. La app se pagó sola la primera noche.”</p>
+            <h4 style="margin-top:15px; color:#ff7a00;">DJ ANDRÉS MIX</h4>
+        </div>
+        <div class="testimonial">
+            <div>
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            </div>
+            <p>“Fácil de usar y mis clientes la aman. 100% recomendada.”</p>
+            <h4 style="margin-top:15px; color:#ff7a00;">DJ NICO</h4>
+        </div>
     </div>
 </section>
 
-<!-- FAQ -->
 <section class="section">
     <h2>Preguntas frecuentes</h2>
 
     <div class="faq">
-        <div class="faq-item">¿Necesito instalar algo?</div>
-        <div class="faq-item">¿Funciona en cualquier celular?</div>
-        <div class="faq-item">¿Puedo cancelar cuando quiera?</div>
+        <div class="faq-item">
+            <i class="fa-solid fa-chevron-right"></i>
+            <div>
+                <h4 style="margin-bottom:5px;">¿Necesito instalar algo?</h4>
+                <p style="color:#888; font-size:14px;">No, funciona directamente desde el navegador de cualquier dispositivo.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <i class="fa-solid fa-chevron-right"></i>
+            <div>
+                <h4 style="margin-bottom:5px;">¿Funciona en cualquier celular?</h4>
+                <p style="color:#888; font-size:14px;">Sí, es totalmente compatible con sistemas Android y iPhone.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <i class="fa-solid fa-chevron-right"></i>
+            <div>
+                <h4 style="margin-bottom:5px;">¿Puedo cancelar cuando quiera?</h4>
+                <p style="color:#888; font-size:14px;">Sí, no hay compromisos ni contratos, cancela cuando lo desees.</p>
+            </div>
+        </div>
     </div>
 </section>
 
-<!-- FINAL CTA -->
 <div class="final">
-    <h2>Empieza hoy</h2>
-    <a href="#">ACTIVAR MI KARAOKE INTELIGENTE</a>
+    <h2>Empieza hoy y convierte tu karaoke en una experiencia profesional</h2>
+    <a href="#precio">ACTIVAR MI KARAOKE INTELIGENTE</a>
 </div>
 
+<script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+<script>
+    paypal.Buttons({
+        style: {
+            shape: 'pill',
+            color: 'blue',
+            layout: 'horizontal',
+            label: 'subscribe'
+        },
+        createSubscription: function(data, actions) {
+            return actions.subscription.create({
+                plan_id: 'P-0RV59459KB864673KNH5JMYY'
+            });
+        },
+        onApprove: function(data, actions) {
+            alert('Suscripción exitosa: ' + data.subscriptionID);
+            window.location.href = "/registro.html";
+        }
+    }).render('#paypal-button-container-P-0RV59459KB864673KNH5JMYY');
+</script>
 </body>
 </html>
