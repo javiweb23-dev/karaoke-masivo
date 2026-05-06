@@ -432,7 +432,7 @@ body{
 .legal-footer{
     background:#050505;
     text-align:center;
-    padding:20px;
+    padding:30px;
     border-top:1px solid #111;
 }
 
@@ -442,10 +442,102 @@ body{
     font-size:12px;
     margin:0 10px;
     transition:color 0.3s;
+    cursor:pointer;
 }
 
 .legal-footer a:hover{
     color:#ff7a00;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.9);
+    z-index:2000;
+    justify-content:center;
+    align-items:center;
+    backdrop-filter:blur(10px);
+}
+
+.modal-content{
+    background:#111;
+    color:#ddd;
+    padding:50px;
+    border-radius:15px;
+    border:1px solid #222;
+    max-width:700px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    position:relative;
+}
+
+.modal-close{
+    position:absolute;
+    top:15px;
+    right:20px;
+    font-size:25px;
+    color:#888;
+    cursor:pointer;
+}
+
+.modal-close:hover{
+    color:#ff0066;
+}
+
+.modal-content h3{
+    color:#ff7a00;
+    margin-bottom:20px;
+    font-size:22px;
+}
+
+.modal-content h4{
+    color:#fff;
+    margin:15px 0 5px;
+    font-size:16px;
+}
+
+.modal-content p{
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:10px;
+}
+
+.cookie-banner{
+    display:none;
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    background:#111;
+    color:#ddd;
+    padding:15px;
+    z-index:1500;
+    border-top:1px solid #222;
+    text-align:center;
+    font-size:13px;
+}
+
+.cookie-banner a{
+    color:#ff7a00;
+    text-decoration:none;
+    margin:0 5px;
+}
+
+.cookie-btn{
+    background:#ff7a00;
+    color:#fff;
+    border:none;
+    padding:8px 15px;
+    border-radius:5px;
+    font-weight:600;
+    cursor:pointer;
+    margin-left:15px;
+    font-size:12px;
 }
 
 @media (max-width: 768px) {
@@ -480,7 +572,7 @@ body{
             <span class="highlight">máquina de pedidos en vivo</span>
         </h1>
 
-        <p>Permite que tus clientes pidan canciones desde su celular y aumenta el consumo sin esfuerzo. Muchas veces los clientes cantan siempre las mismas canciones y se torna aburrido, con una lista digital verán canciones que no recordaban pero les gusta y su experiencia será de otro nivel.</p>
+        <p>Olvídate de los papelitos y el desorden. Permite que tus clientes pidan canciones desde su celular y aumenta el consumo sin esfuerzo. Muchas veces los clientes cantan siempre las mismas canciones y se torna aburrido, con una lista digital verán canciones que no recordaban pero les gusta y su experiencia será de otro nivel.</p>
 
         <div class="hero-stats">
             <div class="stat-item">
@@ -534,7 +626,16 @@ body{
     <div class="video-text">
         <h2>Mira cómo la música fluye sola</h2>
         <p>Un vistazo rápido a la experiencia que vivirán tus clientes desde sus teléfonos. Cero fricción, búsquedas instantáneas y un catálogo siempre actualizado en la palma de su mano.</p>
-        <a href="#precio" class="btn">PROBAR AHORA</a>
+        
+        <ul style="list-style:none; text-align:left; margin-top:20px; color:#bbb;">
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-shield-virus" style="color:#ff7a00; margin-right:10px;"></i> Antispam Inteligente: Límite de 3 canciones activas por persona (pueden pedir más a medida que cantan).</li>
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-copy" style="color:#ff7a00; margin-right:10px;"></i> Control de Duplicados: Evita que varios pidan la misma canción al mismo tiempo.</li>
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-qrcode" style="color:#ff7a00; margin-right:10px;"></i> Generador de QR Integrado: QR único por mesa, compartible desde la app.</li>
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-vibration" style="color:#ff7a00; margin-right:10px;"></i> Alertas al Próximo Cantante: Panel de DJ que activa alarma y vibración en el celular del cliente (si mantiene la app abierta).</li>
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-file-excel" style="color:#ff7a00; margin-right:10px;"></i> Catálogo Precargado: 1500 canciones actualizables mediante Excel.</li>
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-palette" style="color:#ff7a00; margin-right:10px;"></i> Marca Blanca: Personalización con tu logo y colores.</li>
+            <li style="margin-bottom:10px;"><i class="fa-solid fa-id-badge" style="color:#ff7a00; margin-right:10px;"></i> Autogestión Sencilla: No requiere conocimientos de informática.</li>
+        </ul>
     </div>
 </section>
 
@@ -545,12 +646,12 @@ body{
         <div class="card">
             <i class="fa-solid fa-music"></i>
             <h3>Olvídate de los papelitos y el desorden</h3>
-            <p>Tus clientes participan más y piden sus canciones de forma organizada sin depender del DJ.</p>
+            <p>Tus clientes participan más y piden sus canciones de forma organizada.</p>
         </div>
         <div class="card">
             <i class="fa-solid fa-dollar-sign"></i>
             <h3>Más consumo</h3>
-            <p>Más canciones significa más bebidas y más ingresos.</p>
+            <p>Los que han probado la app nos han reportado aumento del tiempo de permanencia de los clientes en los locales por la organización de la sesión de karaoke.</p>
         </div>
         <div class="card">
             <i class="fa-solid fa-sliders-h"></i>
@@ -674,9 +775,24 @@ body{
 </div>
 
 <div class="legal-footer">
-    <a href="#">Términos y Condiciones</a>
-    <a href="#">Política de Cancelación y Reembolso</a>
-    <a href="#">Política de Privacidad</a>
+    <a onclick="openModal('terms')">Términos y Condiciones</a>
+    <a onclick="openModal('cancel')">Política de Cancelación y Reembolso</a>
+    <a onclick="openModal('privacy')">Política de Privacidad</a>
+    <a onclick="openModal('cookies')">Política de Cookies</a>
+</div>
+
+<!-- MODAL PARA LEGALES -->
+<div id="legalModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <div id="modalText"></div>
+    </div>
+</div>
+
+<!-- BANNER DE COOKIES -->
+<div id="cookieBanner" class="cookie-banner">
+    Este sitio usa cookies para funcionar y para analizar el tráfico. Puedes conocer más en nuestra <a onclick="openModal('cookies')">Política de Cookies</a>.
+    <button class="cookie-btn" onclick="acceptCookies()">Aceptar</button>
 </div>
 
 <script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
@@ -698,6 +814,43 @@ body{
             window.location.href = "/registro.html";
         }
     }).render('#paypal-button-container-P-0RV59459KB864673KNH5JMYY');
+
+    // FUNCIONES PARA MODALES LEGALES
+    const legalTexts = {
+        terms: '<h3>Términos y Condiciones</h3><p>Al suscribirse a Karaoke Latino Pro, usted acepta estos términos. El software SaaS se ofrece "tal cual" para la gestión de pedidos de canciones. El licenciatario es responsable de la gestión operativa de su local y del personal que use el panel del DJ.</p><h4>Licencia de Uso</h4><p>Se otorga una licencia de uso no exclusiva para su establecimiento durante el periodo de suscripción pagado.</p>',
+        cancel: '<h3>Política de Cancelación y Reembolso</h3><p>La suscripción se cobra mensualmente. El cliente puede cancelar en cualquier momento desde su panel de control o enviando un correo. Al cancelar, el servicio permanecerá activo hasta el final del ciclo de facturación actual.</p><h4>Devoluciones</h4><p>Debido a la naturaleza digital del producto, y a que se ofrece una prueba gratuita de 7 días, no se emitirán reembolsos parciales o totales una vez procesado el pago mensual.</p>',
+        privacy: '<h3>Política de Privacidad</h3><p>Protegemos sus datos según el RGPD. Recolectamos solo la información necesaria para el funcionamiento de la suscripción (correo electrónico, nombre del establecimiento). No vendemos ni compartimos sus datos personales con terceros.</p>',
+        cookies: '<h3>Política de Cookies</h3><p>Utilizamos cookies técnicas y de sesión esenciales para el funcionamiento del panel de control de PayPal y la autenticación. También usamos cookies analíticas anónimas para mejorar el servicio. Al navegar por la web, usted acepta su uso.</p>'
+    };
+
+    function openModal(type) {
+        document.getElementById('modalText').innerHTML = legalTexts[type];
+        document.getElementById('legalModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('legalModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('legalModal')) {
+            closeModal();
+        }
+    }
+
+    // GESTIÓN DEL BANNER DE COOKIES
+    function checkCookies() {
+        if (!localStorage.getItem('cookiesAccepted')) {
+            document.getElementById('cookieBanner').style.display = 'block';
+        }
+    }
+
+    function acceptCookies() {
+        localStorage.setItem('cookiesAccepted', 'true');
+        document.getElementById('cookieBanner').style.display = 'none';
+    }
+
+    window.onload = checkCookies;
 </script>
 </body>
 </html>
