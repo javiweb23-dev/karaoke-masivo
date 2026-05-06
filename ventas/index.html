@@ -29,19 +29,44 @@ body{
     z-index:1000;
     border-bottom:1px solid #111;
 }
+
 .logo{color:#ff7a00;font-weight:800;font-size:22px;display:flex;align-items:center;gap:10px;}
-.nav a{
+
+.nav-links{
+    display:flex;
+    align-items:center;
+}
+
+.nav-links a{
     color:#ccc;
     margin-left:20px;
     text-decoration:none;
     font-size:14px;
     font-weight:600;
+    transition:color 0.3s;
 }
-.nav .cta{
+
+.nav-links a:hover{
+    color:#ff7a00;
+}
+
+.nav-links .cta{
     background:#ff7a00;
     padding:10px 18px;
     border-radius:6px;
     color:#fff;
+}
+
+.nav-links .cta:hover{
+    color:#fff;
+    background:#e66a00;
+}
+
+.hamburger{
+    display:none;
+    font-size:24px;
+    color:#ff7a00;
+    cursor:pointer;
 }
 
 .hero{
@@ -254,13 +279,6 @@ body{
 .video-text h2{
     text-align:left;
     font-size:34px;
-}
-
-.video-text p{
-    color:#bbb;
-    font-size:18px;
-    line-height:1.6;
-    margin-bottom:20px;
 }
 
 .price-container{
@@ -541,6 +559,11 @@ body{
 }
 
 @media (max-width: 768px) {
+    .hamburger { display:block; }
+    .nav-links { display:none; flex-direction:column; position:absolute; top:70px; left:0; width:100%; background:rgba(5,5,5,0.95); padding:20px 0; border-bottom:1px solid #222; }
+    .nav-links.active { display:flex; }
+    .nav-links a { margin:15px 0; font-size:16px; }
+    .nav-links .cta { margin-top:15px; }
     .hero { flex-direction: column; text-align: center; padding-top: 150px; }
     .hero-stats { justify-content: center; }
     .hero-checks { justify-content: center; }
@@ -555,7 +578,8 @@ body{
 
 <div class="nav">
     <div class="logo"><i class="fa-solid fa-microphone-lines"></i> KaraokeLatino</div>
-    <div>
+    <div class="hamburger" onclick="toggleMenu()"><i class="fa-solid fa-bars"></i></div>
+    <div class="nav-links" id="navLinks">
         <a href="#inicio">Inicio</a>
         <a href="#ventajas">Ventajas</a>
         <a href="#como-funciona">Cómo funciona</a>
@@ -598,7 +622,7 @@ body{
     </div>
 
     <div class="phone">
-        <img src="../screenshot1.jpg" alt="Karaoke App">
+        <img src="screenshot1.jpg" alt="Karaoke App">
     </div>
 </section>
 
@@ -615,17 +639,16 @@ body{
 
     <div>
         <h2>La solución:<br><span class="gradient-text">Pedidos en tiempo real</span></h2>
-        <p style="color:#bbb; max-width:300px; margin:auto;">Tus clientes hacen sus pedidos desde su celular y tú los recibes organizados automáticamente.</p>
+        <p style="color:#bbb; max-width:500px; margin:auto;">Tus clientes hacen sus pedidos desde su celular y tú los recibes organizados automáticamente. Bríndales una experiencia fluida con cero fricción, búsquedas instantáneas y un catálogo siempre actualizado en la palma de su mano.</p>
     </div>
 </section>
 
 <section id="como-funciona" class="section video-section">
     <div class="video-container">
-        <video src="../video.mp4" autoplay loop muted playsinline></video>
+        <video src="video.mp4" autoplay loop muted playsinline></video>
     </div>
     <div class="video-text">
         <h2>Mira cómo la música fluye sola</h2>
-        <p>Un vistazo rápido a la experiencia que vivirán tus clientes desde sus teléfonos. Cero fricción, búsquedas instantáneas y un catálogo siempre actualizado en la palma de su mano.</p>
         
         <ul style="list-style:none; text-align:left; margin-top:20px; color:#bbb;">
             <li style="margin-bottom:10px;"><i class="fa-solid fa-shield-virus" style="color:#ff7a00; margin-right:10px;"></i> Antispam Inteligente: Límite de 3 canciones activas por persona (pueden pedir más a medida que cantan).</li>
@@ -781,7 +804,6 @@ body{
     <a onclick="openModal('cookies')">Política de Cookies</a>
 </div>
 
-<!-- MODAL PARA LEGALES -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" onclick="closeModal()">&times;</span>
@@ -789,7 +811,6 @@ body{
     </div>
 </div>
 
-<!-- BANNER DE COOKIES -->
 <div id="cookieBanner" class="cookie-banner">
     Este sitio usa cookies para funcionar y para analizar el tráfico. Puedes conocer más en nuestra <a onclick="openModal('cookies')">Política de Cookies</a>.
     <button class="cookie-btn" onclick="acceptCookies()">Aceptar</button>
@@ -815,7 +836,6 @@ body{
         }
     }).render('#paypal-button-container-P-0RV59459KB864673KNH5JMYY');
 
-    // FUNCIONES PARA MODALES LEGALES
     const legalTexts = {
         terms: '<h3>Términos y Condiciones</h3><p>Al suscribirse a Karaoke Latino Pro, usted acepta estos términos. El software SaaS se ofrece "tal cual" para la gestión de pedidos de canciones. El licenciatario es responsable de la gestión operativa de su local y del personal que use el panel del DJ.</p><h4>Licencia de Uso</h4><p>Se otorga una licencia de uso no exclusiva para su establecimiento durante el periodo de suscripción pagado.</p>',
         cancel: '<h3>Política de Cancelación y Reembolso</h3><p>La suscripción se cobra mensualmente. El cliente puede cancelar en cualquier momento desde su panel de control o enviando un correo. Al cancelar, el servicio permanecerá activo hasta el final del ciclo de facturación actual.</p><h4>Devoluciones</h4><p>Debido a la naturaleza digital del producto, y a que se ofrece una prueba gratuita de 7 días, no se emitirán reembolsos parciales o totales una vez procesado el pago mensual.</p>',
@@ -838,7 +858,6 @@ body{
         }
     }
 
-    // GESTIÓN DEL BANNER DE COOKIES
     function checkCookies() {
         if (!localStorage.getItem('cookiesAccepted')) {
             document.getElementById('cookieBanner').style.display = 'block';
@@ -851,6 +870,17 @@ body{
     }
 
     window.onload = checkCookies;
+
+    function toggleMenu() {
+        var nav = document.getElementById("navLinks");
+        nav.classList.toggle("active");
+    }
+
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            document.getElementById('navLinks').classList.remove('active');
+        });
+    });
 </script>
 </body>
 </html>
