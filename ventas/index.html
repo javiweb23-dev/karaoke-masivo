@@ -14,6 +14,7 @@ body{
     font-family:'Poppins',sans-serif;
     background:#050505;
     color:#fff;
+    scroll-behavior:smooth;
 }
 
 .nav{
@@ -66,8 +67,9 @@ body{
 
 .hero p{
     color:#bbb;
-    font-size:18px;
+    font-size:16px;
     margin-bottom:30px;
+    line-height:1.6;
 }
 
 .hero-stats{
@@ -290,6 +292,46 @@ body{
     letter-spacing:1px;
 }
 
+.security-badge{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    color:#888;
+    font-size:13px;
+    margin-top:15px;
+}
+
+.guarantee-box{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:15px;
+    margin-top:30px;
+    padding-top:25px;
+    border-top:1px solid #222;
+}
+
+.guarantee-box i{
+    color:#00ff00;
+    font-size:35px;
+}
+
+.guarantee-box div{
+    text-align:left;
+}
+
+.guarantee-box h4{
+    color:#fff;
+    font-size:16px;
+    margin-bottom:3px;
+}
+
+.guarantee-box p{
+    color:#888;
+    font-size:13px;
+}
+
 .testimonials{
     display:flex;
     gap:20px;
@@ -387,6 +429,25 @@ body{
     display:inline-block;
 }
 
+.legal-footer{
+    background:#050505;
+    text-align:center;
+    padding:20px;
+    border-top:1px solid #111;
+}
+
+.legal-footer a{
+    color:#666;
+    text-decoration:none;
+    font-size:12px;
+    margin:0 10px;
+    transition:color 0.3s;
+}
+
+.legal-footer a:hover{
+    color:#ff7a00;
+}
+
 @media (max-width: 768px) {
     .hero { flex-direction: column; text-align: center; padding-top: 150px; }
     .hero-stats { justify-content: center; }
@@ -403,23 +464,23 @@ body{
 <div class="nav">
     <div class="logo"><i class="fa-solid fa-microphone-lines"></i> KaraokeLatino</div>
     <div>
-        <a href="#">Inicio</a>
-        <a href="#">Ventajas</a>
-        <a href="#">Cómo funciona</a>
-        <a href="#">Precios</a>
-        <a href="#">FAQ</a>
+        <a href="#inicio">Inicio</a>
+        <a href="#ventajas">Ventajas</a>
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#precio">Precios</a>
+        <a href="#faq">FAQ</a>
         <a href="#precio" class="cta">Empezar</a>
     </div>
 </div>
 
-<section class="hero">
+<section id="inicio" class="hero">
     <div class="hero-text">
         <h1>
             Convierte tu karaoke en una<br>
             <span class="highlight">máquina de pedidos en vivo</span>
         </h1>
 
-        <p>Permite que tus clientes pidan canciones desde su celular y aumenta el consumo sin esfuerzo.</p>
+        <p>Permite que tus clientes pidan canciones desde su celular y aumenta el consumo sin esfuerzo. Muchas veces los clientes cantan siempre las mismas canciones y se torna aburrido, con una lista digital verán canciones que no recordaban pero les gusta y su experiencia será de otro nivel.</p>
 
         <div class="hero-stats">
             <div class="stat-item">
@@ -466,7 +527,7 @@ body{
     </div>
 </section>
 
-<section class="section video-section">
+<section id="como-funciona" class="section video-section">
     <div class="video-container">
         <video src="../video.mp4" autoplay loop muted playsinline></video>
     </div>
@@ -477,14 +538,14 @@ body{
     </div>
 </section>
 
-<section class="section">
+<section id="ventajas" class="section">
     <h2>Lo que vas a lograr desde el <span class="highlight">primer día</span></h2>
 
     <div class="grid">
         <div class="card">
             <i class="fa-solid fa-music"></i>
-            <h3>Más pedidos</h3>
-            <p>Tus clientes participan más sin depender del DJ.</p>
+            <h3>Olvídate de los papelitos y el desorden</h3>
+            <p>Tus clientes participan más y piden sus canciones de forma organizada sin depender del DJ.</p>
         </div>
         <div class="card">
             <i class="fa-solid fa-dollar-sign"></i>
@@ -504,7 +565,7 @@ body{
     </div>
 </section>
 
-<section class="section" id="precio">
+<section id="precio" class="section">
     <div class="price-container">
         <div class="badge">Sin contratos ocultos</div>
         <h2>Todo esto por solo</h2>
@@ -517,6 +578,19 @@ body{
         </ul>
 
         <div id="paypal-button-container-P-0RV59459KB864673KNH5JMYY" style="width:100%; margin-top:20px;"></div>
+        
+        <div class="security-badge">
+            <i class="fa-solid fa-lock"></i> Pago 100% seguro y encriptado
+        </div>
+
+        <div class="guarantee-box">
+            <i class="fa-solid fa-shield-halved"></i>
+            <div>
+                <h4>Prueba 7 Días Gratis</h4>
+                <p>Usa la plataforma sin costo. Si no te convence, cancela y no pagas nada.</p>
+            </div>
+        </div>
+
     </div>
 </section>
 
@@ -566,7 +640,7 @@ body{
     </div>
 </section>
 
-<section class="section">
+<section id="faq" class="section">
     <h2>Preguntas frecuentes</h2>
 
     <div class="faq">
@@ -597,6 +671,12 @@ body{
 <div class="final">
     <h2>Empieza hoy y convierte tu karaoke en una experiencia profesional</h2>
     <a href="#precio">ACTIVAR MI KARAOKE INTELIGENTE</a>
+</div>
+
+<div class="legal-footer">
+    <a href="#">Términos y Condiciones</a>
+    <a href="#">Política de Cancelación y Reembolso</a>
+    <a href="#">Política de Privacidad</a>
 </div>
 
 <script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
