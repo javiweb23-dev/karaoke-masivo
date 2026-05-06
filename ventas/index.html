@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karaoke Latino Pro | El Estándar de Élite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; }
+        h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 900; letter-spacing: -3px; line-height: 0.9; margin-bottom: 20px; background: linear-gradient(180deg, #fff 0%, #888 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p.subtitle { color: #888; font-size: 1.2rem; max-width: 600px; margin-bottom: 50px; line-height: 1.6; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; margin-bottom: 60px; width: 100%; }
+        .feature-item { background: #111; padding: 30px; border-radius: 15px; border: 1px solid #222; transition: border 0.3s; }
+        .feature-item:hover { border-color: #0070ba; }
+        .feature-item h3 { margin-top: 0; font-size: 1.1rem; color: #0070ba; }
+        .feature-item p { font-size: 0.9rem; color: #666; margin-bottom: 0; }
+        .pricing-card { background: #000; border: 1px solid #222; padding: 50px 30px; border-radius: 30px; position: relative; width: 100%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,1); }
+        .price-tag { font-size: 4rem; font-weight: 900; margin: 10px 0; letter-spacing: -2px; }
+        .price-tag span { font-size: 1.2rem; color: #444; vertical-align: middle; }
+        .lambo-glow { position: relative; padding: 10px; border-radius: 50px; margin-top: 30px; }
+        .lambo-glow::after { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(45deg, #0070ba, #00bfff, #0070ba); border-radius: 50px; z-index: -1; filter: blur(15px); opacity: 0.6; animation: rotateGlow 3s linear infinite; }
+        @keyframes rotateGlow { 0% { filter: blur(15px) hue-rotate(0deg); } 50% { filter: blur(25px) hue-rotate(15deg); opacity: 0.8; } 100% { filter: blur(15px) hue-rotate(0deg); } }
+        #paypal-button-container-P-0RV59459KB864673KNH5JMYY { width: 100%; }
+        footer { margin-top: 100px; padding: 40px; color: #333; font-size: 0.8rem; border-top: 1px solid #111; width: 100%; }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>Lleva tu show de karaoke al siguiente nivel.</h1>
+        <p class="subtitle">La plataforma definitiva para DJs que buscan control total, seguridad blindada y una imagen de élite ante sus clientes.</p>
+        
+        <div class="features-grid">
+            <div class="feature-item">
+                <h3>Identidad Visual</h3>
+                <p>Personaliza cada rincón con tu logo y colores, haz que la tecnología sea tuya.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Blindaje Pro</h3>
+                <p>PIN de seguridad exclusivo por sesión, olvida los saboteos en tus eventos.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Acceso Web</h3>
+                <p>Sin descargas ni instalaciones pesadas, tus clientes piden canciones desde el móvil al instante.</p>
+            </div>
+        </div>
+
+        <div class="pricing-card">
+            <p style="text-transform: uppercase; letter-spacing: 2px; color: #555; font-weight: bold;">Membresía Ilimitada</p>
+            <div class="price-tag">$19<span>/mes</span></div>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 30px;">Acceso total a todas las funciones de Karaoke Latino Pro.</p>
+            
+            <div class="lambo-glow">
+                <div id="paypal-button-container-P-0RV59459KB864673KNH5JMYY"></div>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 ROI Agencia de Marketing. Todos los derechos reservados.
+        </footer>
+    </section>
+
+    <script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+    <script>
+      paypal.Buttons({
+          style: {
+              shape: 'pill',
+              color: 'blue',
+              layout: 'horizontal',
+              label: 'subscribe'
+          },
+          createSubscription: function(data, actions) {
+            return actions.subscription.create({
+              plan_id: 'P-0RV59459KB864673KNH5JMYY'
+            });
+          },
+          onApprove: function(data, actions) {
+            alert('Suscripción exitosa: ' + data.subscriptionID);
+          }
+      }).render('#paypal-button-container-P-0RV59459KB864673KNH5JMYY');
+    </script>
+</body>
+</html>

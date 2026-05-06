@@ -9,5 +9,27 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "mikaraokelatino.com"
+        }
+      ],
+      "destination": "/ventas/index.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "karaokepro.live"
+        }
+      ],
+      "destination": "/index.html"
+    }
   ]
 }
