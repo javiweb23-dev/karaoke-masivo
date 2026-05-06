@@ -188,10 +188,20 @@ body{
     background:#0a0a0a;
 }
 
+.problem-col{
+    flex:1 1 400px;
+    max-width:500px;
+    text-align:left;
+}
+
+.problem-col h2{
+    text-align:left;
+}
+
 .problem-list{
     text-align:left;
     list-style:none;
-    max-width:420px;
+    width:100%;
 }
 
 .problem-list li{
@@ -570,6 +580,9 @@ body{
     .phone { margin-top: 50px; }
     .video-section { text-align: center; }
     .video-text h2 { text-align: center; }
+    .problem-col { text-align: center; }
+    .problem-col h2 { text-align: center; }
+    .problem-list li { text-align: left; }
 }
 </style>
 </head>
@@ -627,7 +640,7 @@ body{
 </section>
 
 <section class="section problem">
-    <div>
+    <div class="problem-col">
         <h2>¿Qué pasa cuando <span style="color:#ff0066">NO tienes esta app?</span></h2>
         <ul class="problem-list">
             <li><i class="fa-solid fa-circle-xmark"></i> Pedidos desordenados y repetidos</li>
@@ -637,9 +650,9 @@ body{
         </ul>
     </div>
 
-    <div>
+    <div class="problem-col">
         <h2>La solución:<br><span class="gradient-text">Pedidos en tiempo real</span></h2>
-        <p style="color:#bbb; max-width:500px; margin:auto;">Tus clientes hacen sus pedidos desde su celular y tú los recibes organizados automáticamente. Bríndales una experiencia fluida con cero fricción, búsquedas instantáneas y un catálogo siempre actualizado en la palma de su mano.</p>
+        <p style="color:#bbb;">Tus clientes hacen sus pedidos desde su celular y tú los recibes organizados automáticamente. Bríndales una experiencia fluida con cero fricción, búsquedas instantáneas y un catálogo siempre actualizado en la palma de su mano.</p>
     </div>
 </section>
 
