@@ -49,7 +49,7 @@ body{
     align-items:center;
     justify-content:space-between;
     padding:120px 8% 60px;
-    background:linear-gradient(rgba(5,5,5,0.9),rgba(5,5,5,0.95)), url('/bg.jpg') center/cover;
+    background:linear-gradient(rgba(5,5,5,0.9),rgba(5,5,5,0.95)), url('https://images.unsplash.com/photo-1540039155732-68473638c410?q=80&w=1920') center/cover;
 }
 
 .hero-text{max-width:600px}
@@ -164,7 +164,7 @@ body{
 .problem-list{
     text-align:left;
     list-style:none;
-    max-width:400px;
+    max-width:420px;
 }
 
 .problem-list li{
@@ -181,7 +181,7 @@ body{
 
 .problem-list i{
     color:#ff0066;
-    font-size:20px;
+    font-size:28px;
 }
 
 .grid{
@@ -301,20 +301,47 @@ body{
     background:#111;
     padding:30px;
     border-radius:12px;
-    width:300px;
+    width:320px;
     text-align:left;
     border:1px solid #222;
 }
 
+.testi-header{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.testi-header img{
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #333;
+}
+
+.testi-header h4{
+    color:#ff7a00;
+    margin-bottom:2px;
+    font-size:16px;
+}
+
+.testi-header span{
+    color:#888;
+    font-size:12px;
+    font-weight:300;
+}
+
 .testimonial i{
     color:#ffb400;
-    margin-bottom:15px;
 }
 
 .testimonial p{
     color:#ccc;
     font-size:14px;
     font-style:italic;
+    margin-top:15px;
 }
 
 .faq{
@@ -381,7 +408,7 @@ body{
         <a href="#">Cómo funciona</a>
         <a href="#">Precios</a>
         <a href="#">FAQ</a>
-        <a href="#" class="cta">Empezar</a>
+        <a href="#precio" class="cta">Empezar</a>
     </div>
 </div>
 
@@ -418,7 +445,7 @@ body{
     </div>
 
     <div class="phone">
-        <img src="/screenshot1.jpg" alt="Karaoke App">
+        <img src="../screenshot1.jpg" alt="Karaoke App">
     </div>
 </section>
 
@@ -426,10 +453,10 @@ body{
     <div>
         <h2>¿Qué pasa cuando <span style="color:#ff0066">NO tienes esta app?</span></h2>
         <ul class="problem-list">
-            <li><i class="fa-solid fa-times-circle"></i> Pedidos desordenados y repetidos</li>
-            <li><i class="fa-solid fa-times-circle"></i> Clientes molestos porque no escuchan su turno</li>
-            <li><i class="fa-solid fa-times-circle"></i> El DJ pierde tiempo organizando canciones</li>
-            <li><i class="fa-solid fa-times-circle"></i> Menos interacción y menos consumo</li>
+            <li><i class="fa-solid fa-circle-xmark"></i> Pedidos desordenados y repetidos</li>
+            <li><i class="fa-solid fa-circle-xmark"></i> Clientes molestos porque no escuchan su turno</li>
+            <li><i class="fa-solid fa-circle-xmark"></i> El DJ pierde tiempo organizando canciones</li>
+            <li><i class="fa-solid fa-circle-xmark"></i> Menos interacción y menos consumo</li>
         </ul>
     </div>
 
@@ -441,7 +468,7 @@ body{
 
 <section class="section video-section">
     <div class="video-container">
-        <video src="/video.mp4" autoplay loop muted playsinline></video>
+        <video src="../video.mp4" autoplay loop muted playsinline></video>
     </div>
     <div class="video-text">
         <h2>Mira cómo la música fluye sola</h2>
@@ -498,25 +525,43 @@ body{
 
     <div class="testimonials">
         <div class="testimonial">
+            <div class="testi-header">
+                <img src="https://ui-avatars.com/api/?name=DJ+Cabel&background=111&color=ff7a00&rounded=true" alt="Foto DJ">
+                <div>
+                    <h4>DJ CABEL</h4>
+                    <span>México</span>
+                </div>
+            </div>
             <div>
                 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
             </div>
             <p>“Mis clientes piden más canciones y el ambiente ha mejorado un montón.”</p>
-            <h4 style="margin-top:15px; color:#ff7a00;">DJ CABEL</h4>
         </div>
         <div class="testimonial">
+            <div class="testi-header">
+                <img src="https://ui-avatars.com/api/?name=Andres+Mix&background=111&color=ff7a00&rounded=true" alt="Foto DJ">
+                <div>
+                    <h4>DJ ANDRÉS MIX</h4>
+                    <span>Colombia</span>
+                </div>
+            </div>
             <div>
                 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
             </div>
             <p>“Más pedidos, más tragos vendidos. La app se pagó sola la primera noche.”</p>
-            <h4 style="margin-top:15px; color:#ff7a00;">DJ ANDRÉS MIX</h4>
         </div>
         <div class="testimonial">
+            <div class="testi-header">
+                <img src="https://ui-avatars.com/api/?name=DJ+Nico&background=111&color=ff7a00&rounded=true" alt="Foto DJ">
+                <div>
+                    <h4>DJ NICO</h4>
+                    <span>Venezuela</span>
+                </div>
+            </div>
             <div>
                 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
             </div>
             <p>“Fácil de usar y mis clientes la aman. 100% recomendada.”</p>
-            <h4 style="margin-top:15px; color:#ff7a00;">DJ NICO</h4>
         </div>
     </div>
 </section>
