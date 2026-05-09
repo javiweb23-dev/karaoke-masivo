@@ -73,17 +73,30 @@ async function loadBrandingByDj() {
 
 async function loadSongsByDj() {
     const loading = document.getElementById('loading');
-    const { data, error } = await _supabase
-        .from('canciones')
-        .select('numero, artista, titulo, genero, idioma')
-        .eq('id_dj', currentDjId)
-        .order('numero', { ascending: true });
-    if (error) {
-        if (loading) loading.innerText = 'Error al leer las canciones. Refresca la pagina.';
+    let todasLasFilas = [];
+    let rangoInicio = 0;
+    const tamRango = 1000;
+    let errorTotales = null;
+    while (true) {
+        const res = await _supabase
+            .from('canciones')
+            .select('numero, artista, titulo, genero, idioma')
+            .eq('id_dj', currentDjId)
+            .order('numero', { ascending: true })
+            .range(rangoInicio, rangoInicio + tamRango - 1);
+        errorTotales = res.error;
+        if (errorTotales) break;
+        const trozo = res.data || [];
+        todasLasFilas = todasLasFilas.concat(trozo);
+        if (trozo.length < tamRango) break;
+        rangoInicio += tamRango;
+    }
+    if (errorTotales) {
+        if (loading) loading.innerText = errorTotales.message || 'Error al leer las canciones. Refresca la pagina.';
         allSongs = [];
         return;
     }
-    allSongs = (data || []).map((song) => ({
+    allSongs = todasLasFilas.map((song) => ({
         number: song.numero,
         artist: song.artista,
         title: song.titulo,
@@ -488,16 +501,14 @@ function applyFilters() {
         const cleanA = normalizeFilterText(s.artist);
         const cleanT = normalizeFilterText(s.title);
         const cleanG = normalizeFilterText(s.genre);
-        const numStr = String(s.number != null ? s.number : '');
-        const cleanNum = normalizeFilterText(numStr);
+        const cleanNum = normalizeFilterText(String(s.number != null ? s.number : ''));
 
         const matchSearch =
             term === '' ||
             cleanA.includes(term) ||
             cleanT.includes(term) ||
             cleanG.includes(term) ||
-            cleanNum.includes(term) ||
-            numStr.includes(rawTerm);
+            cleanNum.includes(term);
 
         return matchLang && matchSearch;
     });
