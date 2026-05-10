@@ -262,14 +262,16 @@ function mostrarAlertaElegante(mensaje, tipo) {
     const btn = document.createElement('button');
     btn.innerText = 'ACEPTAR';
     btn.style.backgroundColor = accent;
-    btn.style.color = 'white';
     btn.style.border = 'none';
     btn.style.padding = '12px 25px';
     btn.style.borderRadius = '8px';
     btn.style.marginTop = '20px';
     btn.style.cursor = 'pointer';
-    btn.style.fontWeight = 'bold';
     btn.style.fontSize = '16px';
+    btn.style.color = '#ffffff';
+    btn.style.fontWeight = '800';
+    btn.style.textTransform = 'uppercase';
+    btn.style.letterSpacing = '1px';
     btn.onclick = async () => {
         await unlockNotificationAudio();
         document.body.removeChild(modal);

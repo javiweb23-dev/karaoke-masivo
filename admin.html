@@ -288,6 +288,70 @@
             return null;
         }
 
+        function mostrarAlertaElegante(mensaje, tipo) {
+            const accent = tipo === 'error'
+                ? '#dc3545'
+                : getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || DEFAULT_PRIMARY_COLOR;
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.85)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '9999';
+            modal.style.margin = '0';
+            modal.style.padding = '0';
+            modal.style.boxSizing = 'border-box';
+            const box = document.createElement('div');
+            box.style.backgroundColor = '#1a1a1a';
+            box.style.padding = '25px';
+            box.style.borderRadius = '12px';
+            box.style.border = '2px solid ' + accent;
+            box.style.textAlign = 'center';
+            box.style.width = 'calc(100% - 40px)';
+            box.style.maxWidth = '400px';
+            box.style.boxSizing = 'border-box';
+            box.style.color = 'white';
+            box.style.boxShadow = '0 10px 25px rgba(255, 102, 0, 0.2)';
+            box.style.margin = '0';
+            const title = document.createElement('h3');
+            title.innerText = '🎤 Karaoke Latino Dice:';
+            title.style.color = accent;
+            title.style.margin = '0 0 15px 0';
+            const text = document.createElement('p');
+            text.innerText = mensaje;
+            text.style.whiteSpace = 'pre-line';
+            text.style.fontSize = '16px';
+            text.style.lineHeight = '1.5';
+            text.style.wordBreak = 'break-word';
+            text.style.margin = '0';
+            const btn = document.createElement('button');
+            btn.innerText = 'ACEPTAR';
+            btn.style.backgroundColor = accent;
+            btn.style.border = 'none';
+            btn.style.padding = '12px 25px';
+            btn.style.borderRadius = '8px';
+            btn.style.marginTop = '20px';
+            btn.style.cursor = 'pointer';
+            btn.style.fontSize = '16px';
+            btn.style.color = '#ffffff';
+            btn.style.fontWeight = '800';
+            btn.style.textTransform = 'uppercase';
+            btn.style.letterSpacing = '1px';
+            btn.onclick = () => {
+                document.body.removeChild(modal);
+            };
+            box.appendChild(title);
+            box.appendChild(text);
+            box.appendChild(btn);
+            modal.appendChild(box);
+            document.body.appendChild(modal);
+        }
+
         function setStatus(msg, isError) {
             importStatus.textContent = msg;
             importStatus.style.color = isError ? '#ff4d4f' : '#9be564';
@@ -393,7 +457,7 @@
 
         async function validarPin() {
             if (!currentDjId) {
-                alert('PIN Incorrecto');
+                mostrarAlertaElegante('PIN Incorrecto', 'error');
                 return;
             }
             const entered = pinInput.value.trim();
@@ -403,7 +467,7 @@
                 .eq('id_dj', currentDjId)
                 .maybeSingle();
             if (error || !data) {
-                alert('PIN Incorrecto');
+                mostrarAlertaElegante('PIN Incorrecto', 'error');
                 pinInput.value = '';
                 pinInput.focus();
                 return;
@@ -415,7 +479,7 @@
                 initRealtimeAndData();
                 return;
             }
-            alert('PIN Incorrecto');
+            mostrarAlertaElegante('PIN Incorrecto', 'error');
             pinInput.value = '';
             pinInput.focus();
         }
