@@ -821,7 +821,7 @@ body{
                 <li>Suscripción mensual con PayPal</li>
                 <li>Cancela cuando quieras</li>
             </ul>
-            <div class="pricing-paypal-slot"><div id="paypal-button-mensual"></div></div>
+            <div id="paypal-button-mensual" class="pricing-paypal-slot"></div>
         </div>
 
         <div class="pricing-card pricing-card-featured">
@@ -834,7 +834,7 @@ body{
                 <li>Suscripción semestral con PayPal</li>
                 <li>Misma potencia, mejor precio por mes</li>
             </ul>
-            <div class="pricing-paypal-slot"><div id="paypal-button-semestral"></div></div>
+            <div id="paypal-button-semestral" class="pricing-paypal-slot"></div>
         </div>
 
         <div class="pricing-card">
@@ -842,11 +842,11 @@ body{
             <h3 class="plan-tier">Pro Lifetime</h3>
             <p class="plan-amount">65 USD<span style="font-size:15px;font-weight:600;color:#888;"> / Pago único</span></p>
             <ul class="plan-list">
-                <li>Un solo pago, uso prolongado del servicio según términos</li>
+                <li>Un solo pago uso permanente y recibe actualizaciones cuando las tenga la app</li>
                 <li>Sin renovaciones automáticas</li>
                 <li>Pago único con PayPal</li>
             </ul>
-            <div class="pricing-paypal-slot"><div id="paypal-button-lifetime"></div></div>
+            <div id="paypal-button-lifetime" class="pricing-paypal-slot"></div>
         </div>
     </div>
 
@@ -963,24 +963,44 @@ body{
 </div>
 
 <script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&currency=USD&intent=capture" data-namespace="paypal_otc"></script>
 <script>
     paypal.Buttons({
-        style: {
-            shape: 'pill',
-            color: 'blue',
-            layout: 'horizontal',
-            label: 'subscribe'
-        },
+        style: { shape: 'pill', color: 'blue', layout: 'vertical', label: 'subscribe' },
         createSubscription: function(data, actions) {
-            return actions.subscription.create({
-                plan_id: 'P-0RV59459KB864673KNH5JMYY'
-            });
+            return actions.subscription.create({ plan_id: 'TU_PLAN_ID_MENSUAL' });
         },
         onApprove: function(data, actions) {
             alert('Suscripción exitosa: ' + data.subscriptionID);
-            window.location.href = "/registro.html";
+            window.location.href = '/registro.html';
         }
     }).render('#paypal-button-mensual');
+
+    paypal.Buttons({
+        style: { shape: 'pill', color: 'blue', layout: 'vertical', label: 'subscribe' },
+        createSubscription: function(data, actions) {
+            return actions.subscription.create({ plan_id: 'TU_PLAN_ID_SEMESTRAL' });
+        },
+        onApprove: function(data, actions) {
+            alert('Suscripción exitosa: ' + data.subscriptionID);
+            window.location.href = '/registro.html';
+        }
+    }).render('#paypal-button-semestral');
+
+    paypal_otc.Buttons({
+        style: { shape: 'pill', color: 'blue', layout: 'vertical', label: 'pay' },
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{ amount: { currency_code: 'USD', value: '65.00' } }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                alert('Pago completado con éxito por ' + details.payer.name.given_name);
+                window.location.href = '/registro.html';
+            });
+        }
+    }).render('#paypal-button-lifetime');
 
     const legalTexts = {
         terms: '<h3>Términos y Condiciones</h3><p>Al suscribirse a Karaoke Latino Pro, usted acepta estos términos. El software SaaS se ofrece "tal cual" para la gestión de pedidos de canciones. El licenciatario es responsable de la gestión operativa de su local y del personal que use el panel del DJ.</p><h4>Licencia de Uso</h4><p>Se otorga una licencia de uso no exclusiva para su establecimiento durante el periodo de suscripción pagado.</p>',
