@@ -310,25 +310,15 @@ body{
     flex-direction:column;
     gap:14px;
     min-height:100%;
-    transition:border-color 0.25s, box-shadow 0.25s;
+    box-shadow:none;
+    transform:translateY(0);
+    transition:all 0.3s ease;
 }
 
 .pricing-card:hover{
-    border-color:#333;
-}
-
-.pricing-card-featured{
-    border:2px solid #ff7a00;
-    box-shadow:0 0 42px rgba(255,122,0,.28);
-    padding:36px 26px;
-    transform:scale(1.05);
-    position:relative;
-    z-index:2;
-    background:linear-gradient(165deg,#161616 0%,#0a0a0a 55%);
-}
-
-.pricing-card-featured:hover{
-    border-color:#ff8c26;
+    border-color:#ff7a00;
+    box-shadow:0 12px 32px rgba(255,122,0,.2);
+    transform:translateY(-5px);
 }
 
 .plan-label{
@@ -685,7 +675,6 @@ body{
     .problem-col { text-align: center; }
     .problem-col h2 { text-align: center; }
     .problem-list li { text-align: left; }
-    .pricing-card-featured { transform: none; order: -1; }
     .pricing-grid { gap: 22px; }
 }
 </style>
