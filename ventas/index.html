@@ -378,22 +378,14 @@ body{
 }
 
 .plan-list li::before{
-    content:'';
+    content:'\f00c';
+    font-family:'Font Awesome 6 Free';
+    font-weight:900;
     position:absolute;
     left:0;
-    top:0.45em;
-    width:7px;
-    height:7px;
-    border-radius:50%;
-    background:#ff7a00;
-}
-
-.plan-list li:has(> i.fa-check){
-    padding-left:0;
-}
-
-.plan-list li:has(> i.fa-check)::before{
-    display:none;
+    top:0;
+    color:#00ff00;
+    font-size:13px;
 }
 
 .pricing-paypal-slot{
@@ -815,7 +807,7 @@ body{
             <p class="plan-amount">9 USD<span style="font-size:15px;font-weight:600;color:#888;"> / mes</span></p>
             <ul class="plan-list">
                 <li>Ideal para probar sin compromiso largo</li>
-                <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:#00ff00; margin-right:10px;"></i> Acceso a todas las funciones y actualizaciones</li>
+                <li>Acceso a todas las funciones y actualizaciones</li>
                 <li>Cancela cuando quieras</li>
             </ul>
             <div id="paypal-button-mensual" class="pricing-paypal-slot"></div>
@@ -828,7 +820,7 @@ body{
             <p class="plan-detail">Equivale a 7 USD al mes facturados por semestre.</p>
             <ul class="plan-list">
                 <li>Ahorra frente al plan mensual</li>
-                <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:#00ff00; margin-right:10px;"></i> Acceso a todas las funciones y actualizaciones</li>
+                <li>Acceso a todas las funciones y actualizaciones</li>
                 <li>Misma potencia, mejor precio por mes</li>
             </ul>
             <div id="paypal-button-semestral" class="pricing-paypal-slot"></div>
@@ -839,9 +831,9 @@ body{
             <h3 class="plan-tier">Pro Lifetime</h3>
             <p class="plan-amount">65 USD<span style="font-size:15px;font-weight:600;color:#888;"> / Pago único</span></p>
             <ul class="plan-list">
-                <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:#00ff00; margin-right:10px;"></i> Un solo pago uso permanente</li>
+                <li>Un solo pago uso permanente</li>
                 <li>Sin renovaciones automáticas</li>
-                <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:#00ff00; margin-right:10px;"></i> Acceso a todas las funciones y actualizaciones</li>
+                <li>Acceso a todas las funciones y actualizaciones</li>
             </ul>
             <div id="paypal-button-lifetime" class="pricing-paypal-slot"></div>
         </div>
