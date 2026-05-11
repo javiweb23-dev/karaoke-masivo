@@ -176,14 +176,52 @@
         const gateMsg = document.getElementById('gate-msg');
         const mainGate = document.getElementById('main-gate');
         const btnRegistro = document.getElementById('btnRegistro');
+        gateMsg.style.display = 'block';
         if (!token) {
-            window.location.replace('/ventas/index.html');
+            const msg = 'Falta el token en la URL.';
+            gateMsg.textContent = msg;
+            console.log(msg);
+            alert(msg);
         } else {
-            gateMsg.style.display = 'block';
             (async function () {
-                const { data: state, error } = await supa.rpc('activation_token_state', { p_token: token });
-                if (error || state !== 'paid_open') {
-                    window.location.replace('/ventas/index.html');
+                const { data: row, error } = await supa
+                    .from('codigos_activacion')
+                    .select('estado, registered_id_dj')
+                    .eq('id_codigo', token)
+                    .maybeSingle();
+                if (error) {
+                    gateMsg.textContent = error.message;
+                    console.log(error);
+                    alert('Error al validar el código: ' + error.message);
+                    return;
+                }
+                if (!row) {
+                    const msg = 'El código no existe en codigos_activacion.';
+                    gateMsg.textContent = msg;
+                    console.log(msg);
+                    alert(msg);
+                    return;
+                }
+                if (row.estado === 'disponible') {
+                    const msg = 'Este código sigue disponible y no está vinculado a un pago.';
+                    gateMsg.textContent = msg;
+                    console.log(msg);
+                    alert(msg);
+                    return;
+                }
+                const regDj = (row.registered_id_dj || '').trim();
+                if (regDj) {
+                    const msg = 'Este código ya tiene un DJ registrado.';
+                    gateMsg.textContent = msg;
+                    console.log(msg);
+                    alert(msg);
+                    return;
+                }
+                if (row.estado !== 'usado') {
+                    const msg = 'Estado del código no válido: ' + row.estado;
+                    gateMsg.textContent = msg;
+                    console.log(msg);
+                    alert(msg);
                     return;
                 }
                 gateMsg.style.display = 'none';
