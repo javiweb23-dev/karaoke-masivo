@@ -111,8 +111,9 @@
     <div class="reg-page">
         <div class="reg-card">
             <h1>Crear cuenta DJ</h1>
-            <p class="sub">Registra tu espacio para gestionar pedidos y catálogo desde el panel.</p>
+            <p class="sub" id="regSub">Verificando tu código de activación…</p>
             <form id="regForm" novalidate>
+                <fieldset id="regGate" style="border:0;padding:0;margin:0;min-width:0" disabled>
                 <div class="reg-field">
                     <label for="idDj">ID de DJ</label>
                     <input id="idDj" name="idDj" type="text" autocomplete="username" maxlength="64" placeholder="ej: bar_central" pattern="[A-Za-z0-9_]+" required>
@@ -126,7 +127,8 @@
                     <label for="pin">PIN (4 dígitos)</label>
                     <input id="pin" name="pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="••••" autocomplete="new-password" required>
                 </div>
-                <button type="submit" class="reg-submit" id="regBtn">CREAR MI CUENTA</button>
+                <button type="submit" class="reg-submit" id="regBtn" disabled>CREAR MI CUENTA</button>
+                </fieldset>
                 <div class="reg-msg" id="regMsg" aria-live="polite"></div>
             </form>
         </div>
@@ -136,9 +138,16 @@
         const SUPABASE_URL = 'https://vqirrwlznzbooiwlksly.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
         const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const params = new URLSearchParams(window.location.search);
+        const actToken = (params.get('token') || '').trim();
+        if (!actToken) {
+            window.location.replace('/ventas/index.html');
+        } else {
         const form = document.getElementById('regForm');
         const regBtn = document.getElementById('regBtn');
         const regMsg = document.getElementById('regMsg');
+        const regSub = document.getElementById('regSub');
+        const regGate = document.getElementById('regGate');
         const idDjInput = document.getElementById('idDj');
         idDjInput.addEventListener('input', () => {
             const pos = idDjInput.selectionStart;
@@ -153,6 +162,17 @@
             regMsg.textContent = text;
             regMsg.className = 'reg-msg ' + (ok ? 'ok' : 'err');
         }
+
+        (async function verificarTokenRegistro() {
+            const { data: state, error } = await supa.rpc('activation_token_state', { p_token: actToken });
+            if (error || state !== 'paid_open') {
+                window.location.replace('/ventas/index.html');
+                return;
+            }
+            regSub.textContent = 'Registra tu espacio para gestionar pedidos y catálogo desde el panel.';
+            regGate.disabled = false;
+            regBtn.disabled = false;
+        })();
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -175,37 +195,30 @@
                 return;
             }
             regBtn.disabled = true;
-            const { data: exist, error: errExist } = await supa
-                .from('usuarios_dj')
-                .select('id_dj')
-                .eq('id_dj', idDj)
-                .limit(1)
-                .maybeSingle();
-            if (errExist) {
-                showMsg(errExist.message, false);
+            const { data: res, error } = await supa.rpc('register_dj_with_activation', {
+                p_token: actToken,
+                p_id_dj: idDj,
+                p_nombre_negocio: nombreNegocio,
+                p_pin: pin
+            });
+            if (error) {
+                showMsg(error.message, false);
                 regBtn.disabled = false;
                 return;
             }
-            if (exist && exist.id_dj) {
-                showMsg('Ese ID de DJ ya está en uso. Elige otro.', false);
-                regBtn.disabled = false;
-                return;
-            }
-            const { error: errIns } = await supa.from('usuarios_dj').insert([{
-                id_dj: idDj,
-                nombre_negocio: nombreNegocio,
-                pin_acceso: pin,
-                logo_url: null,
-                color_principal: null
-            }]);
-            if (errIns) {
-                showMsg(errIns.message, false);
+            if (!res || res.ok !== true) {
+                if (res && res.error === 'duplicate_dj') {
+                    showMsg('Ese ID de DJ ya está en uso. Elige otro.', false);
+                } else {
+                    showMsg('No se pudo completar el registro. Intenta de nuevo.', false);
+                }
                 regBtn.disabled = false;
                 return;
             }
             localStorage.setItem('id_dj', idDj);
             window.location.href = 'admin.html?dj=' + encodeURIComponent(idDj);
         });
+        }
     </script>
 </body>
 </html>

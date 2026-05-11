@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de inicio | Karaoke Latino</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #050505;
+            color: #eaeaea;
+            min-height: 100vh;
+        }
+        .topbar {
+            border-bottom: 1px solid #1a1a1a;
+            padding: 16px 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .topbar img { height: 40px; width: auto; display: block; }
+        .hero {
+            padding: 56px 6% 40px;
+            text-align: center;
+            background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(255, 102, 0, 0.18), transparent 55%);
+        }
+        .hero h1 {
+            font-size: clamp(1.6rem, 4vw, 2.35rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 14px;
+        }
+        .hero h1 span { color: #ff6600; }
+        .hero p {
+            max-width: 640px;
+            margin: 0 auto;
+            color: #9a9a9a;
+            font-size: 1rem;
+            line-height: 1.65;
+        }
+        .cta-wrap {
+            margin-top: 28px;
+        }
+        .btn-primary {
+            display: inline-block;
+            background: #ff6600;
+            color: #fff !important;
+            font-weight: 800;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            box-shadow: 0 12px 40px rgba(255, 102, 0, 0.25);
+            transition: filter 0.2s ease, transform 0.15s ease;
+        }
+        .btn-primary:hover { filter: brightness(1.08); transform: translateY(-2px); }
+        .steps {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 36px 6% 72px;
+        }
+        .steps h2 {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 28px;
+            color: #fff;
+        }
+        .step {
+            background: #101010;
+            border: 1px solid #222;
+            border-radius: 14px;
+            padding: 22px 22px 22px 24px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+        .step-num {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 102, 0, 0.15);
+            color: #ff6600;
+            font-weight: 800;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 102, 0, 0.35);
+        }
+        .step h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .step p {
+            font-size: 0.92rem;
+            color: #a5a5a5;
+            line-height: 1.6;
+        }
+        .foot {
+            text-align: center;
+            padding: 24px 16px 40px;
+            color: #555;
+            font-size: 0.8rem;
+        }
+        #gate-msg { display: none; padding: 80px 16px; text-align: center; color: #888; }
+        #main-gate { display: none; }
+        #main-gate.visible { display: block; }
+    </style>
+</head>
+<body>
+    <div id="gate-msg">Verificando enlace…</div>
+    <div id="main-gate">
+        <header class="topbar">
+            <img src="/logo.png" alt="Karaoke Latino" width="160" height="40">
+        </header>
+        <section class="hero">
+            <h1>Bienvenido a <span>Karaoke Latino Pro</span></h1>
+            <p>Tu compra está confirmada. Sigue estos pasos para dejar tu karaoke listo: primero crea tu cuenta DJ y luego configura catálogo, marca y acceso para tus clientes.</p>
+            <div class="cta-wrap">
+                <a class="btn-primary" id="btnRegistro" href="#">Iniciar Registro</a>
+            </div>
+        </section>
+        <section class="steps">
+            <h2>Después del registro</h2>
+            <article class="step">
+                <div class="step-num">2</div>
+                <div>
+                    <h3>Entra al panel de administración</h3>
+                    <p>Abre la URL del panel con tu parámetro <strong>?dj=tu_id</strong> e introduce el PIN de 4 dígitos que definiste al registrarte. Desde ahí controlas pedidos en vivo, avisos al siguiente cantante y el orden de la cola.</p>
+                </div>
+            </article>
+            <article class="step">
+                <div class="step-num">3</div>
+                <div>
+                    <h3>Importa tu catálogo</h3>
+                    <p>En la sección de importación sube tu archivo Excel o CSV con columnas de número, artista, título y género. El sistema valida filas y carga las canciones asociadas a tu espacio.</p>
+                </div>
+            </article>
+            <article class="step">
+                <div class="step-num">4</div>
+                <div>
+                    <h3>Marca blanca</h3>
+                    <p>Sube el logo de tu local y elige el color principal. La experiencia de tus clientes en la app de pedidos reflejará tu identidad visual.</p>
+                </div>
+            </article>
+            <article class="step">
+                <div class="step-num">5</div>
+                <div>
+                    <h3>Comparte con tus clientes</h3>
+                    <p>Comparte el enlace o el código QR generado para que pidan canciones desde el móvil. Mantén abierta la app en el escenario para recibir alertas cuando toque cantar.</p>
+                </div>
+            </article>
+        </section>
+        <footer class="foot">Karaoke Latino · Guía de inicio rápido</footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://vqirrwlznzbooiwlksly.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
+        const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const params = new URLSearchParams(window.location.search);
+        const token = (params.get('token') || '').trim();
+        const gateMsg = document.getElementById('gate-msg');
+        const mainGate = document.getElementById('main-gate');
+        const btnRegistro = document.getElementById('btnRegistro');
+        if (!token) {
+            window.location.replace('/ventas/index.html');
+        } else {
+            gateMsg.style.display = 'block';
+            (async function () {
+                const { data: state, error } = await supa.rpc('activation_token_state', { p_token: token });
+                if (error || state !== 'paid_open') {
+                    window.location.replace('/ventas/index.html');
+                    return;
+                }
+                gateMsg.style.display = 'none';
+                mainGate.classList.add('visible');
+                btnRegistro.href = '/registro.html?token=' + encodeURIComponent(token);
+            })();
+        }
+    </script>
+</body>
+</html>

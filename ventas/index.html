@@ -951,18 +951,43 @@ body{
     <button class="cookie-btn" onclick="acceptCookies()">Aceptar</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
-<script src="https://www.paypal.com/sdk/js?client-id=BAAfgqwVYdIsfQmVj1zctxUa3OsJvBjcEF1o93z7-t2FclJ9KeASrwHygOeOp-T0FP0UphO7Lw_zeUqpmY&currency=USD&intent=capture" data-namespace="paypal_otc"></script>
 <script>
+    const SUPABASE_URL_VENTAS = 'https://vqirrwlznzbooiwlksly.supabase.co';
+    const SUPABASE_KEY_VENTAS = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
+    const supaVentas = supabase.createClient(SUPABASE_URL_VENTAS, SUPABASE_KEY_VENTAS);
+
+    async function finalizarCompraPayPalSubscription(data) {
+        const subscriptionId = data.subscriptionID;
+        if (!subscriptionId) {
+            alert('No se recibió el identificador de suscripción de PayPal.');
+            return;
+        }
+        const { data: codeId, error } = await supaVentas.rpc('claim_activation_code', { p_paypal_sub_id: subscriptionId });
+        if (error) {
+            alert('No se pudo activar tu licencia: ' + error.message);
+            return;
+        }
+        if (!codeId) {
+            alert('No hay códigos de activación disponibles en este momento. Contacta soporte.');
+            return;
+        }
+        window.location.href = '/guia-inicio.html?token=' + encodeURIComponent(codeId);
+    }
+
+    function onApproveSuscripcion(data, actions) {
+        return finalizarCompraPayPalSubscription(data).catch(function () {
+            alert('Error inesperado al procesar tu compra.');
+        });
+    }
+
     paypal.Buttons({
         style: { shape: 'pill', color: 'blue', layout: 'vertical', label: 'subscribe' },
         createSubscription: function(data, actions) {
             return actions.subscription.create({ plan_id: 'P-9RL36887L0769971DNIAQVOQ' });
         },
-        onApprove: function(data, actions) {
-            alert('Suscripción exitosa: ' + data.subscriptionID);
-            window.location.href = '/registro.html';
-        }
+        onApprove: onApproveSuscripcion
     }).render('#paypal-button-mensual');
 
     paypal.Buttons({
@@ -970,25 +995,15 @@ body{
         createSubscription: function(data, actions) {
             return actions.subscription.create({ plan_id: 'P-58L54907KC430935RNIARBMA' });
         },
-        onApprove: function(data, actions) {
-            alert('Suscripción exitosa: ' + data.subscriptionID);
-            window.location.href = '/registro.html';
-        }
+        onApprove: onApproveSuscripcion
     }).render('#paypal-button-semestral');
 
-    paypal_otc.Buttons({
-        style: { shape: 'pill', color: 'blue', layout: 'vertical', label: 'pay' },
-        createOrder: function(data, actions) {
-            return actions.order.create({
-                purchase_units: [{ amount: { currency_code: 'USD', value: '65.00' } }]
-            });
+    paypal.Buttons({
+        style: { shape: 'pill', color: 'blue', layout: 'vertical', label: 'subscribe' },
+        createSubscription: function(data, actions) {
+            return actions.subscription.create({ plan_id: 'P-7LD64694X2827114VNIARICQ' });
         },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-                alert('Pago completado con éxito por ' + details.payer.name.given_name);
-                window.location.href = '/registro.html';
-            });
-        }
+        onApprove: onApproveSuscripcion
     }).render('#paypal-button-lifetime');
 
     const legalTexts = {
