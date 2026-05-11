@@ -141,7 +141,7 @@
         const params = new URLSearchParams(window.location.search);
         const actToken = (params.get('token') || '').trim();
         if (!actToken) {
-            window.location.replace('/ventas/index.html');
+            alert('Error: Falta el token en la URL.');
         } else {
         const form = document.getElementById('regForm');
         const regBtn = document.getElementById('regBtn');
@@ -164,9 +164,29 @@
         }
 
         (async function verificarTokenRegistro() {
-            const { data: state, error } = await supa.rpc('activation_token_state', { p_token: actToken });
-            if (error || state !== 'paid_open') {
-                window.location.replace('/ventas/index.html');
+            const { data: row, error } = await supa
+                .from('codigos_activacion')
+                .select('estado, registered_id_dj')
+                .eq('id_codigo', actToken)
+                .maybeSingle();
+            if (error) {
+                alert('Error: ' + (error.message || 'Token inválido'));
+                return;
+            }
+            if (!row) {
+                alert('Error: No hay fila en codigos_activacion para este token.');
+                return;
+            }
+            if (row.estado === 'disponible') {
+                alert('Error: El código sigue en estado disponible (sin pasar por compra).');
+                return;
+            }
+            if ((row.registered_id_dj || '').trim()) {
+                alert('Error: Este código ya tiene registered_id_dj.');
+                return;
+            }
+            if (row.estado !== 'usado') {
+                alert('Error: Se esperaba estado usado; actual: ' + row.estado);
                 return;
             }
             regSub.textContent = 'Registra tu espacio para gestionar pedidos y catálogo desde el panel.';
