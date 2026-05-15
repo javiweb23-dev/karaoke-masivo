@@ -82,7 +82,8 @@ async function loadSongsByDj() {
             .from('canciones')
             .select('numero, artista, titulo, genero, idioma')
             .eq('id_dj', currentDjId)
-            .order('numero', { ascending: true })
+            .order('artista', { ascending: true })
+            .order('titulo', { ascending: true })
             .range(rangoInicio, rangoInicio + tamRango - 1);
         errorTotales = res.error;
         if (errorTotales) break;
@@ -98,8 +99,8 @@ async function loadSongsByDj() {
     }
     allSongs = todasLasFilas.map((song) => ({
         number: song.numero,
-        artist: song.artista,
-        title: song.titulo,
+        artist: String(song.artista ?? '').trim(),
+        title: String(song.titulo ?? '').trim(),
         genre: song.genero,
         language: song.idioma
     }));
