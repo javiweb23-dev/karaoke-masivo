@@ -1,5 +1,9 @@
+alter table public.canciones
+add column if not exists cover_url text;
+
 drop function if exists public.actualizar_portada(uuid, text);
 drop function if exists public.actualizar_portada(text, text);
+drop function if exists public.actualizar_portada(bigint, text);
 
 create or replace function public.actualizar_portada(cancion_id bigint, nueva_url text)
 returns void

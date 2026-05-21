@@ -115,12 +115,6 @@ function songDomId(cancion) {
     return 'img-' + raw.replace(/[^a-zA-Z0-9_-]/g, '_');
 }
 
-function getCancionRpcId(cancion) {
-    const raw = cancion?.dbId != null ? cancion.dbId : cancion?.id;
-    const n = parseInt(String(raw ?? ''), 10);
-    return Number.isFinite(n) ? n : null;
-}
-
 function needsCoverFetch(cancion) {
     if (!cancion || cancion.cover_url === 'not_found') return false;
     return !normalizeCoverUrl(cancion.cover_url);
@@ -177,17 +171,17 @@ async function buscarYGuardarPortada(cancion) {
         }
 
         const nuevaUrl = coverValue;
-        const cancionIdRpc = getCancionRpcId(cancion);
-        if (cancionIdRpc == null) {
+        const cancionId = parseInt(cancion.id, 10);
+        if (!Number.isFinite(cancionId)) {
             console.error('actualizar_portada: ID de cancion invalido', cancion);
             return;
         }
         console.log('actualizar_portada RPC:', {
-            cancion_id: cancionIdRpc,
+            cancion_id: cancionId,
             nueva_url: nuevaUrl
         });
         const { error: rpcError } = await _supabase.schema('public').rpc('actualizar_portada', {
-            cancion_id: cancionIdRpc,
+            cancion_id: cancionId,
             nueva_url: nuevaUrl
         });
         if (rpcError) {
@@ -241,42 +235,26 @@ async function fetchCancionesPaginated(selectFields) {
 
 async function loadSongsByDj() {
     const loading = document.getElementById('loading');
-    let result = await fetchCancionesPaginated('id, numero, artista, titulo, genero, idioma');
-    if (result.error && /\bid\b/i.test(result.error.message || '')) {
-        result = await fetchCancionesPaginated('numero, artista, titulo, genero, idioma');
-    }
-    if (!result.error && result.data?.length) {
-        const conPortada = await fetchCancionesPaginated('id, cover_url');
-        if (!conPortada.error && conPortada.data?.length) {
-            const portadaPorId = new Map();
-            conPortada.data.forEach((row) => {
-                if (row.id != null) portadaPorId.set(String(row.id), row.cover_url);
-            });
-            result.data = result.data.map((song) => ({
-                ...song,
-                cover_url: song.id != null ? portadaPorId.get(String(song.id)) : null
-            }));
-        }
+    let result = await fetchCancionesPaginated(
+        'id, numero, artista, titulo, genero, idioma, cover_url'
+    );
+    if (result.error && /cover_url/i.test(result.error.message || '')) {
+        result = await fetchCancionesPaginated('id, numero, artista, titulo, genero, idioma');
     }
     if (result.error) {
         if (loading) loading.innerText = result.error.message || 'Error al leer las canciones. Refresca la pagina.';
         allSongs = [];
         return;
     }
-    allSongs = (result.data || []).map((song) => {
-        const numero = song.numero;
-        const dbId = song.id != null ? song.id : null;
-        return {
-            id: dbId != null ? String(dbId) : `${currentDjId}_${numero}`,
-            dbId,
-            number: numero,
-            artist: String(song.artista ?? '').trim(),
-            title: String(song.titulo ?? '').trim(),
-            genre: song.genero ?? '',
-            language: song.idioma ?? '',
-            cover_url: getStoredCoverUrl(song.cover_url)
-        };
-    });
+    allSongs = (result.data || []).map((song) => ({
+        id: song.id,
+        number: song.numero,
+        artist: String(song.artista ?? '').trim(),
+        title: String(song.titulo ?? '').trim(),
+        genre: song.genero ?? '',
+        language: song.idioma ?? '',
+        cover_url: getStoredCoverUrl(song.cover_url)
+    }));
 }
 
 function formatSongLanguage(lang) {
