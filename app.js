@@ -115,9 +115,18 @@ function songDomId(cancion) {
     return 'img-' + raw.replace(/[^a-zA-Z0-9_-]/g, '_');
 }
 
+function getIntentosBusqueda(cancion) {
+    const n = Number(cancion?.intentos_busqueda);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
 function needsCoverFetch(cancion) {
-    if (!cancion || cancion.cover_url === 'not_found') return false;
-    return !normalizeCoverUrl(cancion.cover_url);
+    if (!cancion) return false;
+    if (cancion.cover_url === 'not_found') return false;
+    if (normalizeCoverUrl(cancion.cover_url)) return false;
+    if (getIntentosBusqueda(cancion) >= 10) return false;
+    const cover = cancion.cover_url;
+    return cover == null || cover === '';
 }
 
 function getAvatarSrc(cancion) {
@@ -143,7 +152,17 @@ async function buscarYGuardarPortada(cancion) {
     if (coverFetchInFlight.has(domId) || !needsCoverFetch(cancion)) return;
     coverFetchInFlight.add(domId);
 
+    const cancionId = parseInt(cancion.id, 10);
+    if (!Number.isFinite(cancionId)) {
+        console.error('actualizar_portada: ID de cancion invalido', cancion);
+        coverFetchInFlight.delete(domId);
+        return;
+    }
+
     try {
+        let nuevaUrl = 'not_found';
+        let displayUrl = null;
+
         const artista = String(cancion.artist ?? '').trim();
         const titulo = String(cancion.title ?? '').trim();
         const term = encodeURIComponent(`${artista} ${titulo}`.trim());
@@ -153,12 +172,9 @@ async function buscarYGuardarPortada(cancion) {
         if (!res.ok) throw new Error('iTunes respondio con error');
 
         const json = await res.json();
-        let coverValue = 'not_found';
-        let displayUrl = null;
-
         if (json.results && json.results.length > 0 && json.results[0].artworkUrl100) {
             displayUrl = upsizeItunesArtwork(json.results[0].artworkUrl100);
-            coverValue = displayUrl;
+            nuevaUrl = displayUrl;
         }
 
         const img = document.getElementById(domId);
@@ -170,12 +186,6 @@ async function buscarYGuardarPortada(cancion) {
             };
         }
 
-        const nuevaUrl = coverValue;
-        const cancionId = parseInt(cancion.id, 10);
-        if (!Number.isFinite(cancionId)) {
-            console.error('actualizar_portada: ID de cancion invalido', cancion);
-            return;
-        }
         console.log('actualizar_portada RPC:', {
             cancion_id: cancionId,
             nueva_url: nuevaUrl
@@ -191,13 +201,19 @@ async function buscarYGuardarPortada(cancion) {
 
         const { data: verificacion } = await _supabase
             .from('canciones')
-            .select('id, numero, cover_url')
+            .select('id, numero, cover_url, intentos_busqueda')
             .eq('id', cancionId)
             .maybeSingle();
         console.log('cover_url en BD (id=' + cancionId + '):', verificacion?.cover_url ?? null);
 
         const enMemoria = allSongs.find((s) => songDomId(s) === domId);
-        if (enMemoria) enMemoria.cover_url = coverValue;
+        if (enMemoria) {
+            enMemoria.cover_url = nuevaUrl === 'not_found' ? 'not_found' : nuevaUrl;
+            enMemoria.intentos_busqueda =
+                verificacion?.intentos_busqueda != null
+                    ? Number(verificacion.intentos_busqueda)
+                    : getIntentosBusqueda(enMemoria) + 1;
+        }
     } catch (err) {
         console.error('buscarYGuardarPortada error:', err);
     } finally {
@@ -243,9 +259,9 @@ async function fetchCancionesPaginated(selectFields) {
 async function loadSongsByDj() {
     const loading = document.getElementById('loading');
     let result = await fetchCancionesPaginated(
-        'id, numero, artista, titulo, genero, idioma, cover_url'
+        'id, numero, artista, titulo, genero, idioma, cover_url, intentos_busqueda'
     );
-    if (result.error && /cover_url/i.test(result.error.message || '')) {
+    if (result.error && /cover_url|intentos_busqueda/i.test(result.error.message || '')) {
         result = await fetchCancionesPaginated('id, numero, artista, titulo, genero, idioma');
     }
     if (result.error) {
@@ -260,7 +276,8 @@ async function loadSongsByDj() {
         title: String(song.titulo ?? '').trim(),
         genre: song.genero ?? '',
         language: song.idioma ?? '',
-        cover_url: getStoredCoverUrl(song.cover_url)
+        cover_url: getStoredCoverUrl(song.cover_url),
+        intentos_busqueda: getIntentosBusqueda({ intentos_busqueda: song.intentos_busqueda })
     }));
 }
 
