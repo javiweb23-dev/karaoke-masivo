@@ -74,33 +74,10 @@ async function loadBrandingByDj() {
     setBranding(data.logo_url, data.color_principal);
 }
 
-function extractCoverUrl(row) {
-    if (!row) return '';
-    const url = row.url || row.cover_url || row.imagen_url || row.avatar_url || '';
-    return String(url).trim();
-}
-
-async function loadCoversByDj() {
-    const coversByNumero = {};
-    let rangoInicio = 0;
-    const tamRango = 1000;
-    while (true) {
-        const res = await _supabase
-            .from('covers')
-            .select('numero, url, cover_url, imagen_url, avatar_url')
-            .eq('id_dj', currentDjId)
-            .range(rangoInicio, rangoInicio + tamRango - 1);
-        if (res.error) return coversByNumero;
-        const trozo = res.data || [];
-        trozo.forEach((row) => {
-            const num = String(row.numero ?? '').trim();
-            const url = extractCoverUrl(row);
-            if (num && url) coversByNumero[num] = url;
-        });
-        if (trozo.length < tamRango) break;
-        rangoInicio += tamRango;
-    }
-    return coversByNumero;
+function normalizeCoverUrl(url) {
+    const value = String(url ?? '').trim();
+    if (!value || value === 'not_found') return '';
+    return value;
 }
 
 async function loadSongsByDj() {
@@ -112,7 +89,7 @@ async function loadSongsByDj() {
     while (true) {
         const res = await _supabase
             .from('canciones')
-            .select('numero, artista, titulo, genero, idioma')
+            .select('numero, artista, titulo, genero, idioma, cover_url')
             .eq('id_dj', currentDjId)
             .order('artista', { ascending: true })
             .order('titulo', { ascending: true })
@@ -129,18 +106,14 @@ async function loadSongsByDj() {
         allSongs = [];
         return;
     }
-    const coversByNumero = await loadCoversByDj();
-    allSongs = todasLasFilas.map((song) => {
-        const numKey = String(song.numero ?? '').trim();
-        return {
-            number: song.numero,
-            artist: String(song.artista ?? '').trim(),
-            title: String(song.titulo ?? '').trim(),
-            genre: song.genero,
-            language: song.idioma,
-            coverUrl: coversByNumero[numKey] || ''
-        };
-    });
+    allSongs = todasLasFilas.map((song) => ({
+        number: song.numero,
+        artist: String(song.artista ?? '').trim(),
+        title: String(song.titulo ?? '').trim(),
+        genre: song.genero,
+        language: song.idioma,
+        cover_url: normalizeCoverUrl(song.cover_url)
+    }));
 }
 
 function formatSongLanguage(lang) {
@@ -509,7 +482,7 @@ function renderSongs(songs) {
         img.alt = '';
         img.loading = 'lazy';
         img.decoding = 'async';
-        const coverSrc = song.coverUrl ? String(song.coverUrl) : DEFAULT_COVER_URL;
+        const coverSrc = song.cover_url ? String(song.cover_url) : DEFAULT_COVER_URL;
         img.src = coverSrc;
         img.onerror = () => {
             img.onerror = null;
