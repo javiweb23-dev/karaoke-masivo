@@ -36,13 +36,11 @@
     <div id="loading">Cargando canciones...</div>
     <div id="noResults" style="display:none;">No se encontraron resultados</div>
 
-    <div class="songs-list-wrapper">
-        <div id="songsList" class="songs-list" role="list"></div>
-    </div>
+    <div id="lista-canciones" style="display: flex; flex-direction: column; width: 100%; max-width: 600px; margin: 0 auto;"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script src="app.js?v=2.5"></script>
+    <script src="app.js?v=2.6"></script>
 
     <script>
         if ('serviceWorker' in navigator) {

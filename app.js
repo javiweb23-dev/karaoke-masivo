@@ -26,8 +26,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSongsByDj();
     applyFilters();
     setupEventListeners();
+    setupListaCancionesDelegation();
     startLiveStatusTracking();
 });
+
+function setupListaCancionesDelegation() {
+    const list = document.getElementById('lista-canciones');
+    if (!list || list.dataset.pedirBound === '1') return;
+    list.dataset.pedirBound = '1';
+    list.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-pedir');
+        if (!btn || !list.contains(btn)) return;
+        manejarClickPedido(
+            btn,
+            btn.getAttribute('data-numero') || '',
+            btn.getAttribute('data-artista') || 'Desconocido',
+            btn.getAttribute('data-titulo') || 'Desconocido'
+        );
+    });
+}
 
 function setupStickyOffsets() {
     const syncOffsets = () => {
@@ -477,8 +494,47 @@ function manejarClickPedido(button, number, artist, title) {
     prepararPedido(number, artist, title);
 }
 
+function buildSongItemHtml(cancion, accent) {
+    const titulo =
+        cancion?.title != null && cancion.title !== ''
+            ? String(cancion.title)
+            : 'Desconocido';
+    const artista =
+        cancion?.artist != null && cancion.artist !== ''
+            ? String(cancion.artist)
+            : 'Desconocido';
+    const meta = formatSongMeta(cancion);
+    const avatarSrc = getAvatarSrc(cancion);
+    const numero = String(cancion?.number ?? '');
+    const placeholder = escapeAttr(AVATAR_PLACEHOLDER);
+
+    return `
+<div class="song-list-item" role="listitem" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #333;width:100%;box-sizing:border-box;">
+    <img
+        src="${escapeAttr(avatarSrc)}"
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onerror="this.onerror=null;this.src='${placeholder}';"
+        style="width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#2a2a2a;display:block;"
+    />
+    <div style="flex-grow:1;min-width:0;overflow:hidden;text-align:left;">
+        <div style="font-weight:700;font-size:16px;line-height:1.25;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(titulo)}</div>
+        <div style="margin-top:4px;font-size:13px;line-height:1.3;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(meta)}</div>
+    </div>
+    <button
+        type="button"
+        class="btn-pedir"
+        data-numero="${escapeAttr(numero)}"
+        data-artista="${escapeAttr(artista)}"
+        data-titulo="${escapeAttr(titulo)}"
+        style="flex-shrink:0;min-width:68px;padding:10px 14px;border:none;border-radius:20px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;background-color:${escapeAttr(accent)};color:#000;"
+    >PEDIR</button>
+</div>`;
+}
+
 function renderSongs(songs) {
-    const list = document.getElementById('songsList');
+    const list = document.getElementById('lista-canciones');
     const loading = document.getElementById('loading');
     const noResults = document.getElementById('noResults');
 
@@ -493,73 +549,21 @@ function renderSongs(songs) {
     }
     if (noResults) noResults.style.display = 'none';
 
-    const fragment = document.createDocumentFragment();
     const lista = Array.isArray(songs) ? songs : [];
     const accent =
         getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() ||
         DEFAULT_PRIMARY_COLOR;
+    const htmlParts = [];
 
     for (const cancion of lista) {
         try {
-            const titulo =
-                cancion?.title != null && cancion.title !== ''
-                    ? String(cancion.title)
-                    : 'Desconocido';
-            const artista =
-                cancion?.artist != null && cancion.artist !== ''
-                    ? String(cancion.artist)
-                    : 'Desconocido';
-            const meta = formatSongMeta(cancion);
-            const avatarSrc = getAvatarSrc(cancion);
-            const numero = String(cancion?.number ?? '');
-
-            const itemHtml = `
-<div class="song-list-item" role="listitem" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #333;width:100%;box-sizing:border-box;">
-    <img
-        src="${escapeAttr(avatarSrc)}"
-        alt=""
-        loading="lazy"
-        decoding="async"
-        style="width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#2a2a2a;display:block;"
-    />
-    <div style="flex-grow:1;min-width:0;overflow:hidden;text-align:left;">
-        <div style="font-weight:700;font-size:16px;line-height:1.25;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(titulo)}</div>
-        <div style="margin-top:4px;font-size:13px;line-height:1.3;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(meta)}</div>
-    </div>
-    <button
-        type="button"
-        class="btn-pedir"
-        style="flex-shrink:0;min-width:68px;padding:10px 14px;border:none;border-radius:20px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;background-color:${escapeAttr(accent)};color:#000;"
-    >PEDIR</button>
-</div>`;
-
-            const shell = document.createElement('div');
-            shell.innerHTML = itemHtml.trim();
-            const item = shell.firstElementChild;
-            if (!item) continue;
-
-            const img = item.querySelector('img');
-            if (img) {
-                img.onerror = () => {
-                    img.onerror = null;
-                    img.src = AVATAR_PLACEHOLDER;
-                };
-            }
-
-            const btn = item.querySelector('.btn-pedir');
-            if (btn) {
-                btn.addEventListener('click', () => {
-                    manejarClickPedido(btn, numero, artista, titulo);
-                });
-            }
-
-            fragment.appendChild(item);
+            htmlParts.push(buildSongItemHtml(cancion, accent));
         } catch (err) {
             console.error('Error al renderizar cancion:', err);
         }
     }
 
-    list.appendChild(fragment);
+    list.innerHTML = htmlParts.join('');
 }
 
 function applyFilters() {
