@@ -151,6 +151,15 @@ function formatSongLanguage(lang) {
     return raw ? raw.toUpperCase() : '—';
 }
 
+function formatSongMeta(song) {
+    const artist =
+        song.artist != null && song.artist !== '' ? String(song.artist) : 'Desconocido';
+    const lang = formatSongLanguage(song.language);
+    const parts = [artist];
+    if (lang && lang !== '—') parts.push(lang);
+    return parts.join(' · ');
+}
+
 async function updateLiveStatus() {
     const liveSingerText = document.getElementById('liveSingerText');
     if (!liveSingerText) return;
@@ -473,14 +482,14 @@ function manejarClickPedido(button, number, artist, title) {
 }
 
 function renderSongs(songs) {
-    const tbody = document.getElementById('songsTableBody');
+    const list = document.getElementById('songsList');
     const loading = document.getElementById('loading');
     const noResults = document.getElementById('noResults');
 
     if (loading) loading.style.display = 'none';
-    if (!tbody) return;
+    if (!list) return;
 
-    tbody.innerHTML = '';
+    list.innerHTML = '';
 
     if (!songs || songs.length === 0) {
         if (noResults) noResults.style.display = 'block';
@@ -491,12 +500,12 @@ function renderSongs(songs) {
     const fragment = document.createDocumentFragment();
 
     songs.forEach((song) => {
-        const row = document.createElement('tr');
+        const item = document.createElement('div');
+        item.className = 'song-list-item';
+        item.setAttribute('role', 'listitem');
 
-        const tdAvatar = document.createElement('td');
-        tdAvatar.className = 'td-avatar';
         const img = document.createElement('img');
-        img.className = 'song-avatar';
+        img.className = 'song-item-avatar';
         img.alt = '';
         img.loading = 'lazy';
         img.decoding = 'async';
@@ -506,10 +515,24 @@ function renderSongs(songs) {
             img.onerror = null;
             img.src = DEFAULT_COVER_URL;
         };
-        tdAvatar.appendChild(img);
 
-        const tdBtn = document.createElement('td');
+        const info = document.createElement('div');
+        info.className = 'song-item-info';
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'song-item-title';
+        titleEl.textContent =
+            song.title != null && song.title !== '' ? String(song.title) : 'Desconocido';
+
+        const metaEl = document.createElement('div');
+        metaEl.className = 'song-item-meta';
+        metaEl.textContent = formatSongMeta(song);
+
+        info.appendChild(titleEl);
+        info.appendChild(metaEl);
+
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = 'btn-pedir';
         btn.textContent = 'PEDIR';
         btn.addEventListener('click', () => {
@@ -520,34 +543,14 @@ function renderSongs(songs) {
                 song.title != null && song.title !== '' ? String(song.title) : 'Desconocido'
             );
         });
-        tdBtn.appendChild(btn);
 
-        const tdArt = document.createElement('td');
-        const strong = document.createElement('strong');
-        strong.textContent = song.artist != null && song.artist !== '' ? String(song.artist) : 'Desconocido';
-        tdArt.appendChild(strong);
-
-        const tdTit = document.createElement('td');
-        tdTit.textContent = song.title != null && song.title !== '' ? String(song.title) : 'Desconocido';
-
-        const tdGen = document.createElement('td');
-        tdGen.style.color = '#888';
-        tdGen.textContent = song.genre != null ? String(song.genre) : '';
-
-        const tdLang = document.createElement('td');
-        tdLang.className = 'td-idioma';
-        tdLang.textContent = formatSongLanguage(song.language);
-
-        row.appendChild(tdAvatar);
-        row.appendChild(tdBtn);
-        row.appendChild(tdArt);
-        row.appendChild(tdTit);
-        row.appendChild(tdGen);
-        row.appendChild(tdLang);
-        fragment.appendChild(row);
+        item.appendChild(img);
+        item.appendChild(info);
+        item.appendChild(btn);
+        fragment.appendChild(item);
     });
 
-    tbody.appendChild(fragment);
+    list.appendChild(fragment);
 }
 
 function applyFilters() {
