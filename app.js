@@ -5,6 +5,10 @@ const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let allSongs = [];
 let coverSearchChain = Promise.resolve();
 const coverFetchInFlight = new Set();
+let coverLazyObserver = null;
+let itunesCooldownUntil = 0;
+const COVER_FETCH_DELAY_MS = 2000;
+const ITUNES_COOLDOWN_MS = 60000;
 const AVATAR_PLACEHOLDER =
     'https://placehold.co/50x50/333333/FFFFFF/png?text=%F0%9F%8E%B5';
 const COVER_PLACEHOLDER_LAZY =
@@ -138,13 +142,69 @@ function upsizeItunesArtwork(url) {
     return String(url).replace(/100x100bb/g, '300x300bb').replace(/100x100/g, '300x300');
 }
 
+async function fetchItunesArtwork(artista, titulo) {
+    if (Date.now() < itunesCooldownUntil) {
+        return { ok: false, rateLimited: true };
+    }
+    const term = encodeURIComponent(`${artista} ${titulo}`.trim());
+    const res = await fetch(`/api/itunes-search?term=${term}`);
+    if (res.status === 429) {
+        itunesCooldownUntil = Date.now() + ITUNES_COOLDOWN_MS;
+        return { ok: false, rateLimited: true };
+    }
+    if (!res.ok) {
+        return { ok: false, rateLimited: false };
+    }
+    const json = await res.json();
+    if (json.results && json.results.length > 0 && json.results[0].artworkUrl100) {
+        return { ok: true, url: upsizeItunesArtwork(json.results[0].artworkUrl100) };
+    }
+    return { ok: true, url: null };
+}
+
 function scheduleCoverSearch(cancion) {
     const key = songDomId(cancion);
     if (coverFetchInFlight.has(key) || !needsCoverFetch(cancion)) return;
+    if (Date.now() < itunesCooldownUntil) return;
     coverSearchChain = coverSearchChain
         .then(() => buscarYGuardarPortada(cancion))
-        .then(() => new Promise((r) => setTimeout(r, 1000)))
+        .then(() => new Promise((r) => setTimeout(r, COVER_FETCH_DELAY_MS)))
         .catch(() => {});
+}
+
+function setupCoverLazyObserver(list, lista) {
+    if (!list || typeof IntersectionObserver === 'undefined') {
+        for (const cancion of lista) {
+            if (needsCoverFetch(cancion)) scheduleCoverSearch(cancion);
+        }
+        return;
+    }
+    if (coverLazyObserver) {
+        coverLazyObserver.disconnect();
+    }
+    const pendientes = lista.filter((c) => needsCoverFetch(c));
+    if (!pendientes.length) return;
+
+    const porDomId = new Map();
+    pendientes.forEach((c) => porDomId.set(songDomId(c), c));
+
+    coverLazyObserver = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const img = entry.target;
+                const cancion = porDomId.get(img.id);
+                if (cancion) scheduleCoverSearch(cancion);
+                coverLazyObserver.unobserve(img);
+            });
+        },
+        { root: null, rootMargin: '120px 0px', threshold: 0.01 }
+    );
+
+    pendientes.forEach((c) => {
+        const img = document.getElementById(songDomId(c));
+        if (img) coverLazyObserver.observe(img);
+    });
 }
 
 async function buscarYGuardarPortada(cancion) {
@@ -165,15 +225,18 @@ async function buscarYGuardarPortada(cancion) {
 
         const artista = String(cancion.artist ?? '').trim();
         const titulo = String(cancion.title ?? '').trim();
-        const term = encodeURIComponent(`${artista} ${titulo}`.trim());
-        const res = await fetch(
-            `https://itunes.apple.com/search?term=${term}&limit=1&entity=song`
-        );
-        if (!res.ok) throw new Error('iTunes respondio con error');
+        const itunes = await fetchItunesArtwork(artista, titulo);
 
-        const json = await res.json();
-        if (json.results && json.results.length > 0 && json.results[0].artworkUrl100) {
-            displayUrl = upsizeItunesArtwork(json.results[0].artworkUrl100);
+        if (!itunes.ok) {
+            console.warn(
+                'iTunes no disponible (CORS o limite). Se reintentara mas tarde:',
+                titulo
+            );
+            return;
+        }
+
+        if (itunes.url) {
+            displayUrl = itunes.url;
             nuevaUrl = displayUrl;
         }
 
@@ -215,7 +278,7 @@ async function buscarYGuardarPortada(cancion) {
                     : getIntentosBusqueda(enMemoria) + 1;
         }
     } catch (err) {
-        console.error('buscarYGuardarPortada error:', err);
+        console.warn('buscarYGuardarPortada:', cancion?.title, err?.message || err);
     } finally {
         coverFetchInFlight.delete(domId);
     }
@@ -691,12 +754,7 @@ function renderSongs(songs) {
     }
 
     list.innerHTML = htmlParts.join('');
-
-    for (const cancion of lista) {
-        if (needsCoverFetch(cancion)) {
-            scheduleCoverSearch(cancion);
-        }
-    }
+    setupCoverLazyObserver(list, lista);
 }
 
 function applyFilters() {
