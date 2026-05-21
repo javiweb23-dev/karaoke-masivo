@@ -3,7 +3,11 @@ const SUPABASE_KEY = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
-let currentLang = 'español';
+const DEFAULT_COVER_URL =
+    'data:image/svg+xml,' +
+    encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#1a1a1a"/><circle cx="32" cy="28" r="10" fill="#444"/><path d="M16 52c4-10 12-14 16-14s12 4 16 14" fill="#444"/></svg>'
+    );
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
@@ -23,7 +27,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupShareQr();
     setupStickyOffsets();
     await loadSongsByDj();
-    syncLangToggleButton();
     applyFilters();
     setupEventListeners();
     startLiveStatusTracking();
@@ -71,6 +74,35 @@ async function loadBrandingByDj() {
     setBranding(data.logo_url, data.color_principal);
 }
 
+function extractCoverUrl(row) {
+    if (!row) return '';
+    const url = row.url || row.cover_url || row.imagen_url || row.avatar_url || '';
+    return String(url).trim();
+}
+
+async function loadCoversByDj() {
+    const coversByNumero = {};
+    let rangoInicio = 0;
+    const tamRango = 1000;
+    while (true) {
+        const res = await _supabase
+            .from('covers')
+            .select('numero, url, cover_url, imagen_url, avatar_url')
+            .eq('id_dj', currentDjId)
+            .range(rangoInicio, rangoInicio + tamRango - 1);
+        if (res.error) return coversByNumero;
+        const trozo = res.data || [];
+        trozo.forEach((row) => {
+            const num = String(row.numero ?? '').trim();
+            const url = extractCoverUrl(row);
+            if (num && url) coversByNumero[num] = url;
+        });
+        if (trozo.length < tamRango) break;
+        rangoInicio += tamRango;
+    }
+    return coversByNumero;
+}
+
 async function loadSongsByDj() {
     const loading = document.getElementById('loading');
     let todasLasFilas = [];
@@ -97,13 +129,26 @@ async function loadSongsByDj() {
         allSongs = [];
         return;
     }
-    allSongs = todasLasFilas.map((song) => ({
-        number: song.numero,
-        artist: String(song.artista ?? '').trim(),
-        title: String(song.titulo ?? '').trim(),
-        genre: song.genero,
-        language: song.idioma
-    }));
+    const coversByNumero = await loadCoversByDj();
+    allSongs = todasLasFilas.map((song) => {
+        const numKey = String(song.numero ?? '').trim();
+        return {
+            number: song.numero,
+            artist: String(song.artista ?? '').trim(),
+            title: String(song.titulo ?? '').trim(),
+            genre: song.genero,
+            language: song.idioma,
+            coverUrl: coversByNumero[numKey] || ''
+        };
+    });
+}
+
+function formatSongLanguage(lang) {
+    const n = normalizeFilterText(lang);
+    if (n.includes('ingl')) return 'INGLÉS';
+    if (n.includes('esp')) return 'ESPAÑOL';
+    const raw = String(lang || '').trim();
+    return raw ? raw.toUpperCase() : '—';
 }
 
 async function updateLiveStatus() {
@@ -447,6 +492,22 @@ function renderSongs(songs) {
 
     songs.forEach((song) => {
         const row = document.createElement('tr');
+
+        const tdAvatar = document.createElement('td');
+        tdAvatar.className = 'td-avatar';
+        const img = document.createElement('img');
+        img.className = 'song-avatar';
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        const coverSrc = song.coverUrl ? String(song.coverUrl) : DEFAULT_COVER_URL;
+        img.src = coverSrc;
+        img.onerror = () => {
+            img.onerror = null;
+            img.src = DEFAULT_COVER_URL;
+        };
+        tdAvatar.appendChild(img);
+
         const tdBtn = document.createElement('td');
         const btn = document.createElement('button');
         btn.className = 'btn-pedir';
@@ -473,21 +534,20 @@ function renderSongs(songs) {
         tdGen.style.color = '#888';
         tdGen.textContent = song.genre != null ? String(song.genre) : '';
 
+        const tdLang = document.createElement('td');
+        tdLang.className = 'td-idioma';
+        tdLang.textContent = formatSongLanguage(song.language);
+
+        row.appendChild(tdAvatar);
         row.appendChild(tdBtn);
         row.appendChild(tdArt);
         row.appendChild(tdTit);
         row.appendChild(tdGen);
+        row.appendChild(tdLang);
         fragment.appendChild(row);
     });
 
     tbody.appendChild(fragment);
-}
-
-function syncLangToggleButton() {
-    const langToggle = document.getElementById('langToggle');
-    if (!langToggle) return;
-    langToggle.dataset.lang = currentLang;
-    langToggle.textContent = currentLang === 'español' ? 'ESPAÑOL' : 'INGLÉS';
 }
 
 function applyFilters() {
@@ -495,38 +555,25 @@ function applyFilters() {
 
     const rawTerm = searchInput ? searchInput.value.trim() : '';
     const term = normalizeFilterText(rawTerm);
-    const langNorm = normalizeFilterText(currentLang);
 
     const filtered = allSongs.filter((s) => {
-        const songLang = normalizeFilterText(s.language);
-        const matchLang = songLang.includes(langNorm);
-
         const cleanA = normalizeFilterText(s.artist);
         const cleanT = normalizeFilterText(s.title);
         const cleanG = normalizeFilterText(s.genre);
         const cleanNum = normalizeFilterText(String(s.number != null ? s.number : ''));
 
-        const matchSearch =
+        return (
             term === '' ||
             cleanA.includes(term) ||
             cleanT.includes(term) ||
             cleanG.includes(term) ||
-            cleanNum.includes(term);
-
-        return matchLang && matchSearch;
+            cleanNum.includes(term)
+        );
     });
     renderSongs(filtered);
 }
 
 function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
-    const langToggle = document.getElementById('langToggle');
     if (searchInput) searchInput.addEventListener('input', applyFilters);
-    if (langToggle) {
-        langToggle.addEventListener('click', () => {
-            currentLang = currentLang === 'español' ? 'inglés' : 'español';
-            syncLangToggleButton();
-            applyFilters();
-        });
-    }
 }

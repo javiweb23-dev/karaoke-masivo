@@ -24,7 +24,6 @@
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="BUSCAR POR TÍTULO, ARTISTA O NÚMERO...">
-        <button type="button" id="langToggle" data-lang="español">ESPAÑOL</button>
     </div>
     <div id="qrModal" class="qr-modal">
         <div class="qr-modal-content">
@@ -41,10 +40,12 @@
         <table id="songsTable">
             <thead>
                 <tr>
+                    <th class="th-avatar" aria-label="Avatar"></th>
                     <th>Acción</th>
                     <th>Artista</th>
                     <th>Título</th>
                     <th>Género</th>
+                    <th>Idioma</th>
                 </tr>
             </thead>
             <tbody id="songsTableBody"></tbody>
@@ -53,7 +54,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script src="app.js?v=2.0"></script>
+    <script src="app.js?v=2.1"></script>
 
     <script>
         if ('serviceWorker' in navigator) {

@@ -78,25 +78,17 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-input,
-#langToggle {
+input {
     display: block;
     width: 100%;
     max-width: 100%;
-    margin: 0 0 12px 0;
+    margin: 0;
     padding: 15px;
     border-radius: 25px;
     border: 1px solid #ccc;
     font-size: 16px;
     outline: none;
     text-align: center;
-}
-
-#langToggle {
-    background-color: #fff;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
 }
 
 .qr-modal {
@@ -168,23 +160,63 @@ table {
 
 #songsTable th:nth-child(1),
 #songsTable td:nth-child(1) {
-    width: 20%;
-    min-width: 76px;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
 }
 
 #songsTable th:nth-child(2),
 #songsTable td:nth-child(2) {
-    width: 26%;
+    width: 18%;
+    min-width: 72px;
 }
 
 #songsTable th:nth-child(3),
 #songsTable td:nth-child(3) {
-    width: 38%;
+    width: 22%;
 }
 
 #songsTable th:nth-child(4),
 #songsTable td:nth-child(4) {
-    width: 16%;
+    width: 28%;
+}
+
+#songsTable th:nth-child(5),
+#songsTable td:nth-child(5) {
+    width: 14%;
+}
+
+#songsTable th:nth-child(6),
+#songsTable td:nth-child(6) {
+    width: 12%;
+    min-width: 64px;
+}
+
+.song-avatar {
+    display: block;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #1a1a1a;
+    margin: 0 auto;
+}
+
+.td-avatar {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.td-idioma {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #aaa;
+}
+
+.th-avatar {
+    width: 44px;
+    padding: 0;
 }
 
 th {
