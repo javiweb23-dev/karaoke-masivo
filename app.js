@@ -171,15 +171,24 @@ async function buscarYGuardarPortada(cancion) {
         }
 
         const nuevaUrl = coverValue;
-        const { error: rpcError } = await _supabase.rpc('actualizar_portada', {
-            cancion_id: cancion.id,
+        const cancionIdStr = String(cancion.id);
+        console.log('actualizar_portada RPC:', {
+            cancion_id: cancionIdStr,
             nueva_url: nuevaUrl
         });
-        if (rpcError) throw rpcError;
+        const { error: rpcError } = await _supabase.schema('public').rpc('actualizar_portada', {
+            cancion_id: cancionIdStr,
+            nueva_url: nuevaUrl
+        });
+        if (rpcError) {
+            console.error('actualizar_portada rpcError:', rpcError);
+            throw rpcError;
+        }
 
         const enMemoria = allSongs.find((s) => songDomId(s) === domId);
         if (enMemoria) enMemoria.cover_url = coverValue;
-    } catch (_err) {
+    } catch (err) {
+        console.error('buscarYGuardarPortada error:', err);
     } finally {
         coverFetchInFlight.delete(domId);
     }
