@@ -3,8 +3,15 @@ const SUPABASE_KEY = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
+let coverSearchChain = Promise.resolve();
+const coverFetchInFlight = new Set();
 const AVATAR_PLACEHOLDER =
     'https://placehold.co/50x50/333333/FFFFFF/png?text=%F0%9F%8E%B5';
+const COVER_PLACEHOLDER_LAZY =
+    'data:image/svg+xml,' +
+    encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect width="50" height="50" fill="#2a2a2a"/><text x="25" y="30" text-anchor="middle" font-size="22" fill="#666">🎵</text></svg>'
+    );
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
@@ -95,9 +102,95 @@ function normalizeCoverUrl(url) {
     return value;
 }
 
+function getStoredCoverUrl(url) {
+    if (url == null || url === undefined) return null;
+    const value = String(url).trim();
+    if (!value || value.toLowerCase() === 'null') return null;
+    if (value === 'not_found') return 'not_found';
+    return value;
+}
+
+function songDomId(cancion) {
+    const raw = cancion?.id != null ? String(cancion.id) : `${currentDjId}_${cancion?.number ?? ''}`;
+    return 'img-' + raw.replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+function needsCoverFetch(cancion) {
+    if (!cancion || cancion.cover_url === 'not_found') return false;
+    return !normalizeCoverUrl(cancion.cover_url);
+}
+
 function getAvatarSrc(cancion) {
     const url = normalizeCoverUrl(cancion?.cover_url);
-    return url ? url : AVATAR_PLACEHOLDER;
+    return url ? url : COVER_PLACEHOLDER_LAZY;
+}
+
+function upsizeItunesArtwork(url) {
+    return String(url).replace(/100x100bb/g, '300x300bb').replace(/100x100/g, '300x300');
+}
+
+async function updateCancionCoverUrl(cancion, coverUrl) {
+    if (cancion.dbId != null && cancion.dbId !== '') {
+        return _supabase.from('canciones').update({ cover_url: coverUrl }).eq('id', cancion.dbId);
+    }
+    return _supabase
+        .from('canciones')
+        .update({ cover_url: coverUrl })
+        .eq('id_dj', currentDjId)
+        .eq('numero', cancion.number);
+}
+
+function scheduleCoverSearch(cancion) {
+    const key = songDomId(cancion);
+    if (coverFetchInFlight.has(key) || !needsCoverFetch(cancion)) return;
+    coverSearchChain = coverSearchChain
+        .then(() => buscarYGuardarPortada(cancion))
+        .then(() => new Promise((r) => setTimeout(r, 1000)))
+        .catch(() => {});
+}
+
+async function buscarYGuardarPortada(cancion) {
+    const domId = songDomId(cancion);
+    if (coverFetchInFlight.has(domId) || !needsCoverFetch(cancion)) return;
+    coverFetchInFlight.add(domId);
+
+    try {
+        const artista = String(cancion.artist ?? '').trim();
+        const titulo = String(cancion.title ?? '').trim();
+        const term = encodeURIComponent(`${artista} ${titulo}`.trim());
+        const res = await fetch(
+            `https://itunes.apple.com/search?term=${term}&limit=1&entity=song`
+        );
+        if (!res.ok) throw new Error('iTunes respondio con error');
+
+        const json = await res.json();
+        let coverValue = 'not_found';
+        let displayUrl = null;
+
+        if (json.results && json.results.length > 0 && json.results[0].artworkUrl100) {
+            displayUrl = upsizeItunesArtwork(json.results[0].artworkUrl100);
+            coverValue = displayUrl;
+        }
+
+        const img = document.getElementById(domId);
+        if (img && displayUrl) {
+            img.src = displayUrl;
+            img.onerror = () => {
+                img.onerror = null;
+                img.src = COVER_PLACEHOLDER_LAZY;
+            };
+        }
+
+        const { error } = await updateCancionCoverUrl(cancion, coverValue);
+        if (error) throw error;
+
+        const enMemoria = allSongs.find((s) => songDomId(s) === domId);
+        if (enMemoria) enMemoria.cover_url = coverValue;
+    } catch (err) {
+        console.error('buscarYGuardarPortada:', cancion?.title, err);
+    } finally {
+        coverFetchInFlight.delete(domId);
+    }
 }
 
 function escapeHtml(str) {
@@ -137,23 +230,37 @@ async function fetchCancionesPaginated(selectFields) {
 
 async function loadSongsByDj() {
     const loading = document.getElementById('loading');
-    let result = await fetchCancionesPaginated('numero, artista, titulo, genero, idioma, cover_url');
+    let result = await fetchCancionesPaginated(
+        'id, numero, artista, titulo, genero, idioma, cover_url'
+    );
     if (result.error && /cover_url/i.test(result.error.message || '')) {
-        result = await fetchCancionesPaginated('numero, artista, titulo, genero, idioma');
+        result = await fetchCancionesPaginated('id, numero, artista, titulo, genero, idioma');
+    }
+    if (result.error && /\bid\b/i.test(result.error.message || '')) {
+        result = await fetchCancionesPaginated('numero, artista, titulo, genero, idioma, cover_url');
+        if (result.error && /cover_url/i.test(result.error.message || '')) {
+            result = await fetchCancionesPaginated('numero, artista, titulo, genero, idioma');
+        }
     }
     if (result.error) {
         if (loading) loading.innerText = result.error.message || 'Error al leer las canciones. Refresca la pagina.';
         allSongs = [];
         return;
     }
-    allSongs = (result.data || []).map((song) => ({
-        number: song.numero,
-        artist: String(song.artista ?? '').trim(),
-        title: String(song.titulo ?? '').trim(),
-        genre: song.genero ?? '',
-        language: song.idioma ?? '',
-        cover_url: normalizeCoverUrl(song.cover_url)
-    }));
+    allSongs = (result.data || []).map((song) => {
+        const numero = song.numero;
+        const dbId = song.id != null ? song.id : null;
+        return {
+            id: dbId != null ? String(dbId) : `${currentDjId}_${numero}`,
+            dbId,
+            number: numero,
+            artist: String(song.artista ?? '').trim(),
+            title: String(song.titulo ?? '').trim(),
+            genre: song.genero ?? '',
+            language: song.idioma ?? '',
+            cover_url: getStoredCoverUrl(song.cover_url)
+        };
+    });
 }
 
 function formatSongLanguage(lang) {
@@ -504,13 +611,15 @@ function buildSongItemHtml(cancion, accent) {
             ? String(cancion.artist)
             : 'Desconocido';
     const meta = formatSongMeta(cancion);
-    const avatarSrc = getAvatarSrc(cancion);
+    const coverValido = normalizeCoverUrl(cancion.cover_url);
+    const avatarSrc = coverValido ? coverValido : COVER_PLACEHOLDER_LAZY;
+    const imgIdAttr = coverValido ? '' : ` id="${escapeAttr(songDomId(cancion))}"`;
     const numero = String(cancion?.number ?? '');
     const placeholder = escapeAttr(AVATAR_PLACEHOLDER);
 
     return `
 <div class="song-list-item" role="listitem" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #333;width:100%;box-sizing:border-box;">
-    <img
+    <img${imgIdAttr}
         src="${escapeAttr(avatarSrc)}"
         alt=""
         loading="lazy"
@@ -564,6 +673,12 @@ function renderSongs(songs) {
     }
 
     list.innerHTML = htmlParts.join('');
+
+    for (const cancion of lista) {
+        if (needsCoverFetch(cancion)) {
+            scheduleCoverSearch(cancion);
+        }
+    }
 }
 
 function applyFilters() {
