@@ -129,17 +129,6 @@ function upsizeItunesArtwork(url) {
     return String(url).replace(/100x100bb/g, '300x300bb').replace(/100x100/g, '300x300');
 }
 
-async function updateCancionCoverUrl(cancion, coverUrl) {
-    if (cancion.dbId != null && cancion.dbId !== '') {
-        return _supabase.from('canciones').update({ cover_url: coverUrl }).eq('id', cancion.dbId);
-    }
-    return _supabase
-        .from('canciones')
-        .update({ cover_url: coverUrl })
-        .eq('id_dj', currentDjId)
-        .eq('numero', cancion.number);
-}
-
 function scheduleCoverSearch(cancion) {
     const key = songDomId(cancion);
     if (coverFetchInFlight.has(key) || !needsCoverFetch(cancion)) return;
@@ -181,13 +170,16 @@ async function buscarYGuardarPortada(cancion) {
             };
         }
 
-        const { error } = await updateCancionCoverUrl(cancion, coverValue);
-        if (error) throw error;
+        const nuevaUrl = coverValue;
+        const { error: rpcError } = await _supabase.rpc('actualizar_portada', {
+            cancion_id: cancion.id,
+            nueva_url: nuevaUrl
+        });
+        if (rpcError) throw rpcError;
 
         const enMemoria = allSongs.find((s) => songDomId(s) === domId);
         if (enMemoria) enMemoria.cover_url = coverValue;
-    } catch (err) {
-        console.error('buscarYGuardarPortada:', cancion?.title, err);
+    } catch (_err) {
     } finally {
         coverFetchInFlight.delete(domId);
     }
