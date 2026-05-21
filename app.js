@@ -3,11 +3,8 @@ const SUPABASE_KEY = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
-const DEFAULT_COVER_URL =
-    'data:image/svg+xml,' +
-    encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#1a1a1a"/><circle cx="32" cy="28" r="10" fill="#444"/><path d="M16 52c4-10 12-14 16-14s12 4 16 14" fill="#444"/></svg>'
-    );
+const AVATAR_PLACEHOLDER =
+    'https://placehold.co/50x50/333333/FFFFFF/png?text=%F0%9F%8E%B5';
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
@@ -75,13 +72,18 @@ async function loadBrandingByDj() {
 }
 
 function normalizeCoverUrl(url) {
-    const value = String(url ?? '').trim();
-    if (!value || value === 'not_found') return '';
+    if (url == null || url === undefined) return null;
+    const value = String(url).trim();
+    if (!value || value === 'not_found' || value.toLowerCase() === 'null') return null;
     return value;
 }
 
-async function loadSongsByDj() {
-    const loading = document.getElementById('loading');
+function getAvatarSrc(cancion) {
+    const url = normalizeCoverUrl(cancion?.cover_url);
+    return url ? url : AVATAR_PLACEHOLDER;
+}
+
+async function fetchCancionesPaginated(selectFields) {
     let todasLasFilas = [];
     let rangoInicio = 0;
     const tamRango = 1000;
@@ -89,29 +91,38 @@ async function loadSongsByDj() {
     while (true) {
         const res = await _supabase
             .from('canciones')
-            .select('numero, artista, titulo, genero, idioma, cover_url')
+            .select(selectFields)
             .eq('id_dj', currentDjId)
             .order('artista', { ascending: true })
             .order('titulo', { ascending: true })
             .range(rangoInicio, rangoInicio + tamRango - 1);
         errorTotales = res.error;
-        if (errorTotales) break;
+        if (errorTotales) return { data: null, error: errorTotales };
         const trozo = res.data || [];
         todasLasFilas = todasLasFilas.concat(trozo);
         if (trozo.length < tamRango) break;
         rangoInicio += tamRango;
     }
-    if (errorTotales) {
-        if (loading) loading.innerText = errorTotales.message || 'Error al leer las canciones. Refresca la pagina.';
+    return { data: todasLasFilas, error: null };
+}
+
+async function loadSongsByDj() {
+    const loading = document.getElementById('loading');
+    let result = await fetchCancionesPaginated('numero, artista, titulo, genero, idioma, cover_url');
+    if (result.error && /cover_url/i.test(result.error.message || '')) {
+        result = await fetchCancionesPaginated('numero, artista, titulo, genero, idioma');
+    }
+    if (result.error) {
+        if (loading) loading.innerText = result.error.message || 'Error al leer las canciones. Refresca la pagina.';
         allSongs = [];
         return;
     }
-    allSongs = todasLasFilas.map((song) => ({
+    allSongs = (result.data || []).map((song) => ({
         number: song.numero,
         artist: String(song.artista ?? '').trim(),
         title: String(song.titulo ?? '').trim(),
-        genre: song.genero,
-        language: song.idioma,
+        genre: song.genero ?? '',
+        language: song.idioma ?? '',
         cover_url: normalizeCoverUrl(song.cover_url)
     }));
 }
@@ -471,57 +482,62 @@ function renderSongs(songs) {
     if (noResults) noResults.style.display = 'none';
 
     const fragment = document.createDocumentFragment();
+    const lista = Array.isArray(songs) ? songs : [];
 
-    songs.forEach((song) => {
-        const item = document.createElement('div');
-        item.className = 'song-list-item';
-        item.setAttribute('role', 'listitem');
+    for (const cancion of lista) {
+        try {
+            const titulo =
+                cancion?.title != null && cancion.title !== ''
+                    ? String(cancion.title)
+                    : 'Desconocido';
+            const artista =
+                cancion?.artist != null && cancion.artist !== ''
+                    ? String(cancion.artist)
+                    : 'Desconocido';
+            const avatarSrc = getAvatarSrc(cancion);
 
-        const img = document.createElement('img');
-        img.className = 'song-item-avatar';
-        img.alt = '';
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        const coverSrc = song.cover_url ? String(song.cover_url) : DEFAULT_COVER_URL;
-        img.src = coverSrc;
-        img.onerror = () => {
-            img.onerror = null;
-            img.src = DEFAULT_COVER_URL;
-        };
+            const item = document.createElement('div');
+            item.className = 'song-list-item';
+            item.setAttribute('role', 'listitem');
 
-        const info = document.createElement('div');
-        info.className = 'song-item-info';
+            const img = document.createElement('img');
+            img.className = 'song-item-avatar';
+            img.alt = '';
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.src = avatarSrc;
+            img.onerror = () => {
+                img.onerror = null;
+                img.src = AVATAR_PLACEHOLDER;
+            };
 
-        const titleEl = document.createElement('div');
-        titleEl.className = 'song-item-title';
-        titleEl.textContent =
-            song.title != null && song.title !== '' ? String(song.title) : 'Desconocido';
+            const info = document.createElement('div');
+            info.className = 'song-item-info';
 
-        const metaEl = document.createElement('div');
-        metaEl.className = 'song-item-meta';
-        metaEl.textContent = formatSongMeta(song);
+            const titleEl = document.createElement('div');
+            titleEl.className = 'song-item-title';
+            titleEl.textContent = titulo;
 
-        info.appendChild(titleEl);
-        info.appendChild(metaEl);
+            const metaEl = document.createElement('div');
+            metaEl.className = 'song-item-meta';
+            metaEl.textContent = formatSongMeta(cancion);
 
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-pedir';
-        btn.textContent = 'PEDIR';
-        btn.addEventListener('click', () => {
-            manejarClickPedido(
-                btn,
-                String(song.number),
-                song.artist != null && song.artist !== '' ? String(song.artist) : 'Desconocido',
-                song.title != null && song.title !== '' ? String(song.title) : 'Desconocido'
-            );
-        });
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-pedir';
+            btn.textContent = 'PEDIR';
+            btn.addEventListener('click', () => {
+                manejarClickPedido(btn, String(cancion.number), artista, titulo);
+            });
 
-        item.appendChild(img);
-        item.appendChild(info);
-        item.appendChild(btn);
-        fragment.appendChild(item);
-    });
+            item.appendChild(img);
+            item.appendChild(info);
+            item.appendChild(btn);
+            fragment.appendChild(item);
+        } catch (err) {
+            console.error('Error al renderizar cancion:', err);
+        }
+    }
 
     list.appendChild(fragment);
 }
