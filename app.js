@@ -83,6 +83,18 @@ function getAvatarSrc(cancion) {
     return url ? url : AVATAR_PLACEHOLDER;
 }
 
+function escapeHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function escapeAttr(str) {
+    return escapeHtml(str).replace(/'/g, '&#39;');
+}
+
 async function fetchCancionesPaginated(selectFields) {
     let todasLasFilas = [];
     let rangoInicio = 0;
@@ -483,6 +495,9 @@ function renderSongs(songs) {
 
     const fragment = document.createDocumentFragment();
     const lista = Array.isArray(songs) ? songs : [];
+    const accent =
+        getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() ||
+        DEFAULT_PRIMARY_COLOR;
 
     for (const cancion of lista) {
         try {
@@ -494,45 +509,50 @@ function renderSongs(songs) {
                 cancion?.artist != null && cancion.artist !== ''
                     ? String(cancion.artist)
                     : 'Desconocido';
+            const meta = formatSongMeta(cancion);
             const avatarSrc = getAvatarSrc(cancion);
+            const numero = String(cancion?.number ?? '');
 
-            const item = document.createElement('div');
-            item.className = 'song-list-item';
-            item.setAttribute('role', 'listitem');
+            const itemHtml = `
+<div class="song-list-item" role="listitem" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #333;width:100%;box-sizing:border-box;">
+    <img
+        src="${escapeAttr(avatarSrc)}"
+        alt=""
+        loading="lazy"
+        decoding="async"
+        style="width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#2a2a2a;display:block;"
+    />
+    <div style="flex-grow:1;min-width:0;overflow:hidden;text-align:left;">
+        <div style="font-weight:700;font-size:16px;line-height:1.25;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(titulo)}</div>
+        <div style="margin-top:4px;font-size:13px;line-height:1.3;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(meta)}</div>
+    </div>
+    <button
+        type="button"
+        class="btn-pedir"
+        style="flex-shrink:0;min-width:68px;padding:10px 14px;border:none;border-radius:20px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;background-color:${escapeAttr(accent)};color:#000;"
+    >PEDIR</button>
+</div>`;
 
-            const img = document.createElement('img');
-            img.className = 'song-item-avatar';
-            img.alt = '';
-            img.loading = 'lazy';
-            img.decoding = 'async';
-            img.src = avatarSrc;
-            img.onerror = () => {
-                img.onerror = null;
-                img.src = AVATAR_PLACEHOLDER;
-            };
+            const shell = document.createElement('div');
+            shell.innerHTML = itemHtml.trim();
+            const item = shell.firstElementChild;
+            if (!item) continue;
 
-            const info = document.createElement('div');
-            info.className = 'song-item-info';
+            const img = item.querySelector('img');
+            if (img) {
+                img.onerror = () => {
+                    img.onerror = null;
+                    img.src = AVATAR_PLACEHOLDER;
+                };
+            }
 
-            const titleEl = document.createElement('div');
-            titleEl.className = 'song-item-title';
-            titleEl.textContent = titulo;
+            const btn = item.querySelector('.btn-pedir');
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    manejarClickPedido(btn, numero, artista, titulo);
+                });
+            }
 
-            const metaEl = document.createElement('div');
-            metaEl.className = 'song-item-meta';
-            metaEl.textContent = formatSongMeta(cancion);
-
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'btn-pedir';
-            btn.textContent = 'PEDIR';
-            btn.addEventListener('click', () => {
-                manejarClickPedido(btn, String(cancion.number), artista, titulo);
-            });
-
-            item.appendChild(img);
-            item.appendChild(info);
-            item.appendChild(btn);
             fragment.appendChild(item);
         } catch (err) {
             console.error('Error al renderizar cancion:', err);
