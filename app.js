@@ -178,30 +178,15 @@ async function buscarYGuardarPortada(cancion) {
         }
         console.log('actualizar_portada RPC:', {
             cancion_id: cancionId,
-            id_dj: currentDjId,
-            numero: cancion.number,
             nueva_url: nuevaUrl
         });
-        const { data: filasActualizadas, error: rpcError } = await _supabase
-            .schema('public')
-            .rpc('actualizar_portada', {
-                cancion_id: parseInt(cancion.id, 10),
-                nueva_url: nuevaUrl,
-                p_id_dj: currentDjId,
-                p_numero: String(cancion.number ?? '')
-            });
+        const { error: rpcError } = await _supabase.schema('public').rpc('actualizar_portada', {
+            cancion_id: parseInt(cancion.id, 10),
+            nueva_url: nuevaUrl
+        });
         if (rpcError) {
             console.error('actualizar_portada rpcError:', rpcError);
             throw rpcError;
-        }
-        if (!filasActualizadas) {
-            console.warn('actualizar_portada: 0 filas actualizadas', {
-                id: cancion.id,
-                numero: cancion.number,
-                id_dj: currentDjId
-            });
-        } else {
-            console.log('actualizar_portada OK, filas:', filasActualizadas);
         }
 
         const { data: verificacion } = await _supabase
