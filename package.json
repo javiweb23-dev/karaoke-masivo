@@ -1,0 +1,11 @@
+{
+  "name": "karaokeapp-masivo",
+  "private": true,
+  "scripts": {
+    "actualizar-portadas": "node actualizar-portadas.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.1",
+    "node-fetch": "^3.3.2"
+  }
+}
