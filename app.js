@@ -167,6 +167,15 @@ function upsizeItunesArtwork(url) {
     return String(url).replace(/100x100bb/g, '300x300bb').replace(/100x100/g, '300x300');
 }
 
+function extraerArtworkUrlValida(result) {
+    if (!result) return null;
+    const raw = result.artworkUrl100;
+    if (raw == null || raw === undefined) return null;
+    const url = String(raw).trim();
+    if (!url || !/^https?:\/\//i.test(url)) return null;
+    return url;
+}
+
 async function fetchItunesResultado(artista, titulo) {
     if (Date.now() < itunesCooldownUntil) {
         return { ok: false, rateLimited: true, result: null };
@@ -187,9 +196,13 @@ async function fetchItunesResultado(artista, titulo) {
 }
 
 async function guardarEstadoPortadaRpc(cancionId, nuevaUrl) {
+    const valor = String(nuevaUrl ?? '').trim();
+    if (valor !== '' && valor !== 'not_found' && !/^https?:\/\//i.test(valor)) {
+        throw new Error('nueva_url invalida para RPC: ' + valor);
+    }
     const { error: rpcError } = await _supabase.schema('public').rpc('actualizar_portada', {
         cancion_id: parseInt(cancionId, 10),
-        nueva_url: nuevaUrl
+        nueva_url: valor === '' ? '' : valor
     });
     if (rpcError) throw rpcError;
     const { data: verificacion } = await _supabase
@@ -321,15 +334,14 @@ async function buscarYGuardarPortada(cancion) {
             return;
         }
 
-        let nuevaUrl = '';
         const result = itunes.result;
-        const coincide =
-            result &&
-            itunesResultCoincide(cancion, result) &&
-            result.artworkUrl100;
+        const artworkUrl = extraerArtworkUrlValida(result);
+        let nuevaUrl = 'not_found';
 
-        if (coincide) {
-            nuevaUrl = upsizeItunesArtwork(result.artworkUrl100);
+        if (artworkUrl && result && itunesResultCoincide(cancion, result)) {
+            nuevaUrl = upsizeItunesArtwork(artworkUrl);
+        } else if (!artworkUrl) {
+            nuevaUrl = 'not_found';
         } else {
             const intentosDespues = intentosAntes + 1;
             nuevaUrl = intentosDespues >= MAX_INTENTOS_PORTADA ? 'not_found' : '';
@@ -337,8 +349,9 @@ async function buscarYGuardarPortada(cancion) {
 
         console.log('actualizar_portada RPC:', {
             cancion_id: cancionId,
-            nueva_url: nuevaUrl || '(vacio, +1 intento)',
-            coincide: !!coincide
+            nueva_url: nuevaUrl === '' ? '(vacio, +1 intento)' : nuevaUrl,
+            tieneArtwork: !!artworkUrl,
+            coincide: !!(artworkUrl && result && itunesResultCoincide(cancion, result))
         });
 
         const verificacion = await guardarEstadoPortadaRpc(cancionId, nuevaUrl);
