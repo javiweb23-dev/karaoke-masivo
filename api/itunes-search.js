@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const url =
         'https://itunes.apple.com/search?term=' +
         encodeURIComponent(term) +
-        '&limit=1&entity=song';
+        '&limit=5&entity=song';
 
     try {
         const upstream = await fetch(url, {

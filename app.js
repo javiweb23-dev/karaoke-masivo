@@ -17,6 +17,7 @@ const COVER_MIC_PLACEHOLDER =
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect width="50" height="50" fill="#252525"/><text x="25" y="31" text-anchor="middle" font-size="18" fill="#777">🎤</text></svg>'
     );
 const MAX_INTENTOS_PORTADA = 10;
+const MIN_PUNTAJE_COINCIDENCIA = 0.52;
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
@@ -144,23 +145,66 @@ function normalizeMatchText(str) {
         .trim();
 }
 
-function textoCoincide(esperado, recibido) {
-    const a = normalizeMatchText(esperado);
-    const b = normalizeMatchText(recibido);
-    if (!a || !b) return false;
-    if (a === b) return true;
-    if (a.includes(b) || b.includes(a)) return true;
+function limpiarTextoKaraoke(str) {
+    return normalizeMatchText(str)
+        .replace(
+            /\b(karaoke|version|remix|live|en vivo|hd|4k|official|video|lyrics|instrumental|cover)\b/g,
+            ' '
+        )
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function puntajeSimilitud(esperado, recibido) {
+    const a = limpiarTextoKaraoke(esperado);
+    const b = limpiarTextoKaraoke(recibido);
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    if (a.includes(b) || b.includes(a)) return 0.92;
     const tokensA = a.split(' ').filter((t) => t.length > 2);
-    const tokensB = b.split(' ').filter((t) => t.length > 2);
-    if (!tokensA.length || !tokensB.length) return false;
-    return tokensA.every((t) => b.includes(t)) && tokensB.every((t) => a.includes(t));
+    if (!tokensA.length) return 0;
+    let hits = 0;
+    tokensA.forEach((t) => {
+        if (b.includes(t)) hits += 1;
+    });
+    return hits / tokensA.length;
+}
+
+function puntajeCoincidenciaItunes(cancion, result) {
+    const artista = String(cancion.artist ?? '').trim();
+    const titulo = String(cancion.title ?? '').trim();
+    const itArtista = String(result.artistName ?? '').trim();
+    const itTitulo = String(result.trackName ?? '').trim();
+    const scoreTitulo = puntajeSimilitud(titulo, itTitulo);
+    const scoreArtista = puntajeSimilitud(artista, itArtista);
+    const scoreCompleto = puntajeSimilitud(`${artista} ${titulo}`, `${itArtista} ${itTitulo}`);
+    const scoreArtistaEnTitulo = puntajeSimilitud(artista, itTitulo);
+    return Math.max(
+        scoreCompleto,
+        scoreTitulo * 0.65 + scoreArtista * 0.35,
+        scoreTitulo * 0.5 + scoreArtistaEnTitulo * 0.5
+    );
+}
+
+function elegirMejorResultadoItunes(cancion, results) {
+    if (!Array.isArray(results) || !results.length) return null;
+    let mejor = null;
+    let mejorPuntaje = 0;
+    results.forEach((result) => {
+        if (!extraerArtworkUrlValida(result)) return;
+        const puntaje = puntajeCoincidenciaItunes(cancion, result);
+        if (puntaje > mejorPuntaje) {
+            mejorPuntaje = puntaje;
+            mejor = result;
+        }
+    });
+    if (!mejor || mejorPuntaje < MIN_PUNTAJE_COINCIDENCIA) return null;
+    return { result: mejor, puntaje: mejorPuntaje };
 }
 
 function itunesResultCoincide(cancion, result) {
     if (!result) return false;
-    const artistaOk = textoCoincide(cancion.artist, result.artistName);
-    const tituloOk = textoCoincide(cancion.title, result.trackName);
-    return artistaOk && tituloOk;
+    return puntajeCoincidenciaItunes(cancion, result) >= MIN_PUNTAJE_COINCIDENCIA;
 }
 
 function upsizeItunesArtwork(url) {
@@ -190,9 +234,8 @@ async function fetchItunesResultado(artista, titulo) {
         return { ok: false, rateLimited: false, result: null };
     }
     const json = await res.json();
-    const result =
-        json.results && json.results.length > 0 ? json.results[0] : null;
-    return { ok: true, rateLimited: false, result };
+    const results = json.results && json.results.length ? json.results : [];
+    return { ok: true, rateLimited: false, results, result: results[0] || null };
 }
 
 async function guardarEstadoPortadaRpc(cancionId, nuevaUrl) {
@@ -352,15 +395,18 @@ async function buscarYGuardarPortada(cancion) {
             return;
         }
 
-        const result = itunes.result;
-        const artworkUrl = extraerArtworkUrlValida(result);
+        const mejor = elegirMejorResultadoItunes(cancion, itunes.results);
         let nuevaUrl = 'not_found';
 
-        if (artworkUrl && result && itunesResultCoincide(cancion, result)) {
-            nuevaUrl = upsizeItunesArtwork(artworkUrl);
-        } else if (!artworkUrl) {
-            nuevaUrl = 'not_found';
-        } else {
+        if (mejor) {
+            nuevaUrl = upsizeItunesArtwork(extraerArtworkUrlValida(mejor.result));
+        } else if (itunes.results?.length) {
+            const primero = itunes.results[0];
+            console.log('iTunes sin coincidencia suficiente:', {
+                catalogo: `${artista} - ${titulo}`,
+                itunes: `${primero.artistName} - ${primero.trackName}`,
+                puntaje: puntajeCoincidenciaItunes(cancion, primero).toFixed(2)
+            });
             const intentosDespues = intentosAntes + 1;
             nuevaUrl = intentosDespues >= MAX_INTENTOS_PORTADA ? 'not_found' : '';
         }
@@ -368,8 +414,8 @@ async function buscarYGuardarPortada(cancion) {
         console.log('actualizar_portada RPC:', {
             cancion_id: cancionId,
             nueva_url: nuevaUrl === '' ? '(vacio, +1 intento)' : nuevaUrl,
-            tieneArtwork: !!artworkUrl,
-            coincide: !!(artworkUrl && result && itunesResultCoincide(cancion, result))
+            coincide: !!mejor,
+            puntaje: mejor ? mejor.puntaje.toFixed(2) : null
         });
 
         const verificacion = await guardarEstadoPortadaRpc(cancionId, nuevaUrl);
