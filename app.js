@@ -11,11 +11,12 @@ const COVER_FETCH_DELAY_MS = 2000;
 const ITUNES_COOLDOWN_MS = 60000;
 const AVATAR_PLACEHOLDER =
     'https://placehold.co/50x50/333333/FFFFFF/png?text=%F0%9F%8E%B5';
-const COVER_PLACEHOLDER_LAZY =
+const COVER_MIC_PLACEHOLDER =
     'data:image/svg+xml,' +
     encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect width="50" height="50" fill="#2a2a2a"/><text x="25" y="30" text-anchor="middle" font-size="22" fill="#666">🎵</text></svg>'
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><rect width="50" height="50" fill="#252525"/><text x="25" y="31" text-anchor="middle" font-size="18" fill="#777">🎤</text></svg>'
     );
+const MAX_INTENTOS_PORTADA = 10;
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
@@ -128,38 +129,125 @@ function needsCoverFetch(cancion) {
     if (!cancion) return false;
     if (cancion.cover_url === 'not_found') return false;
     if (normalizeCoverUrl(cancion.cover_url)) return false;
-    if (getIntentosBusqueda(cancion) >= 10) return false;
+    if (getIntentosBusqueda(cancion) >= MAX_INTENTOS_PORTADA) return false;
     const cover = cancion.cover_url;
     return cover == null || cover === '';
 }
 
-function getAvatarSrc(cancion) {
-    const url = normalizeCoverUrl(cancion?.cover_url);
-    return url ? url : COVER_PLACEHOLDER_LAZY;
+function normalizeMatchText(str) {
+    return String(str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function textoCoincide(esperado, recibido) {
+    const a = normalizeMatchText(esperado);
+    const b = normalizeMatchText(recibido);
+    if (!a || !b) return false;
+    if (a === b) return true;
+    if (a.includes(b) || b.includes(a)) return true;
+    const tokensA = a.split(' ').filter((t) => t.length > 2);
+    const tokensB = b.split(' ').filter((t) => t.length > 2);
+    if (!tokensA.length || !tokensB.length) return false;
+    return tokensA.every((t) => b.includes(t)) && tokensB.every((t) => a.includes(t));
+}
+
+function itunesResultCoincide(cancion, result) {
+    if (!result) return false;
+    const artistaOk = textoCoincide(cancion.artist, result.artistName);
+    const tituloOk = textoCoincide(cancion.title, result.trackName);
+    return artistaOk && tituloOk;
 }
 
 function upsizeItunesArtwork(url) {
     return String(url).replace(/100x100bb/g, '300x300bb').replace(/100x100/g, '300x300');
 }
 
-async function fetchItunesArtwork(artista, titulo) {
+async function fetchItunesResultado(artista, titulo) {
     if (Date.now() < itunesCooldownUntil) {
-        return { ok: false, rateLimited: true };
+        return { ok: false, rateLimited: true, result: null };
     }
     const term = encodeURIComponent(`${artista} ${titulo}`.trim());
     const res = await fetch(`/api/itunes-search?term=${term}`);
     if (res.status === 429) {
         itunesCooldownUntil = Date.now() + ITUNES_COOLDOWN_MS;
-        return { ok: false, rateLimited: true };
+        return { ok: false, rateLimited: true, result: null };
     }
     if (!res.ok) {
-        return { ok: false, rateLimited: false };
+        return { ok: false, rateLimited: false, result: null };
     }
     const json = await res.json();
-    if (json.results && json.results.length > 0 && json.results[0].artworkUrl100) {
-        return { ok: true, url: upsizeItunesArtwork(json.results[0].artworkUrl100) };
+    const result =
+        json.results && json.results.length > 0 ? json.results[0] : null;
+    return { ok: true, rateLimited: false, result };
+}
+
+async function guardarEstadoPortadaRpc(cancionId, nuevaUrl) {
+    const { error: rpcError } = await _supabase.schema('public').rpc('actualizar_portada', {
+        cancion_id: parseInt(cancionId, 10),
+        nueva_url: nuevaUrl
+    });
+    if (rpcError) throw rpcError;
+    const { data: verificacion } = await _supabase
+        .from('canciones')
+        .select('id, cover_url, intentos_busqueda')
+        .eq('id', cancionId)
+        .maybeSingle();
+    return verificacion;
+}
+
+function aplicarEstadoPortadaEnMemoria(cancion, domId, verificacion) {
+    const enMemoria = allSongs.find((s) => songDomId(s) === domId);
+    const target = enMemoria || cancion;
+    if (verificacion) {
+        target.cover_url = getStoredCoverUrl(verificacion.cover_url);
+        target.intentos_busqueda = getIntentosBusqueda({
+            intentos_busqueda: verificacion.intentos_busqueda
+        });
     }
-    return { ok: true, url: null };
+    if (enMemoria) {
+        enMemoria.cover_url = target.cover_url;
+        enMemoria.intentos_busqueda = target.intentos_busqueda;
+    }
+}
+
+function actualizarCoverEnDom(domId, cancion) {
+    const slot = document.getElementById(domId);
+    if (!slot) return;
+    const url = normalizeCoverUrl(cancion.cover_url);
+    if (url) {
+        if (slot.tagName === 'IMG') {
+            slot.src = url;
+            slot.onerror = () => {
+                slot.onerror = null;
+                slot.src = COVER_MIC_PLACEHOLDER;
+            };
+        } else {
+            const img = document.createElement('img');
+            img.id = domId;
+            img.className = 'song-cover-slot';
+            img.alt = '';
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.src = url;
+            img.style.cssText =
+                'width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#2a2a2a;display:block;';
+            img.onerror = () => {
+                img.onerror = null;
+                img.src = COVER_MIC_PLACEHOLDER;
+            };
+            slot.replaceWith(img);
+        }
+        return;
+    }
+    if (slot.tagName === 'IMG') {
+        slot.src = COVER_MIC_PLACEHOLDER;
+        slot.onerror = null;
+    }
 }
 
 function scheduleCoverSearch(cancion) {
@@ -220,12 +308,10 @@ async function buscarYGuardarPortada(cancion) {
     }
 
     try {
-        let nuevaUrl = 'not_found';
-        let displayUrl = null;
-
+        const intentosAntes = getIntentosBusqueda(cancion);
         const artista = String(cancion.artist ?? '').trim();
         const titulo = String(cancion.title ?? '').trim();
-        const itunes = await fetchItunesArtwork(artista, titulo);
+        const itunes = await fetchItunesResultado(artista, titulo);
 
         if (!itunes.ok) {
             console.warn(
@@ -235,48 +321,31 @@ async function buscarYGuardarPortada(cancion) {
             return;
         }
 
-        if (itunes.url) {
-            displayUrl = itunes.url;
-            nuevaUrl = displayUrl;
-        }
+        let nuevaUrl = '';
+        const result = itunes.result;
+        const coincide =
+            result &&
+            itunesResultCoincide(cancion, result) &&
+            result.artworkUrl100;
 
-        const img = document.getElementById(domId);
-        if (img && displayUrl) {
-            img.src = displayUrl;
-            img.onerror = () => {
-                img.onerror = null;
-                img.src = COVER_PLACEHOLDER_LAZY;
-            };
+        if (coincide) {
+            nuevaUrl = upsizeItunesArtwork(result.artworkUrl100);
+        } else {
+            const intentosDespues = intentosAntes + 1;
+            nuevaUrl = intentosDespues >= MAX_INTENTOS_PORTADA ? 'not_found' : '';
         }
 
         console.log('actualizar_portada RPC:', {
             cancion_id: cancionId,
-            nueva_url: nuevaUrl
+            nueva_url: nuevaUrl || '(vacio, +1 intento)',
+            coincide: !!coincide
         });
-        const { error: rpcError } = await _supabase.schema('public').rpc('actualizar_portada', {
-            cancion_id: parseInt(cancion.id, 10),
-            nueva_url: nuevaUrl
-        });
-        if (rpcError) {
-            console.error('actualizar_portada rpcError:', rpcError);
-            throw rpcError;
-        }
 
-        const { data: verificacion } = await _supabase
-            .from('canciones')
-            .select('id, numero, cover_url, intentos_busqueda')
-            .eq('id', cancionId)
-            .maybeSingle();
+        const verificacion = await guardarEstadoPortadaRpc(cancionId, nuevaUrl);
+        aplicarEstadoPortadaEnMemoria(cancion, domId, verificacion);
+        actualizarCoverEnDom(domId, cancion);
+
         console.log('cover_url en BD (id=' + cancionId + '):', verificacion?.cover_url ?? null);
-
-        const enMemoria = allSongs.find((s) => songDomId(s) === domId);
-        if (enMemoria) {
-            enMemoria.cover_url = nuevaUrl === 'not_found' ? 'not_found' : nuevaUrl;
-            enMemoria.intentos_busqueda =
-                verificacion?.intentos_busqueda != null
-                    ? Number(verificacion.intentos_busqueda)
-                    : getIntentosBusqueda(enMemoria) + 1;
-        }
     } catch (err) {
         console.warn('buscarYGuardarPortada:', cancion?.title, err?.message || err);
     } finally {
@@ -693,21 +762,16 @@ function buildSongItemHtml(cancion, accent) {
             : 'Desconocido';
     const meta = formatSongMeta(cancion);
     const coverValido = normalizeCoverUrl(cancion.cover_url);
-    const avatarSrc = coverValido ? coverValido : COVER_PLACEHOLDER_LAZY;
-    const imgIdAttr = coverValido ? '' : ` id="${escapeAttr(songDomId(cancion))}"`;
+    const slotId = escapeAttr(songDomId(cancion));
     const numero = String(cancion?.number ?? '');
     const placeholder = escapeAttr(AVATAR_PLACEHOLDER);
+    const coverHtml = coverValido
+        ? `<img id="${slotId}" class="song-cover-slot" src="${escapeAttr(coverValido)}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${escapeAttr(COVER_MIC_PLACEHOLDER)}';" style="width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#2a2a2a;display:block;" />`
+        : `<img id="${slotId}" class="song-cover-slot" src="${escapeAttr(COVER_MIC_PLACEHOLDER)}" alt="" style="width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#252525;display:block;" />`;
 
     return `
 <div class="song-list-item" role="listitem" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #333;width:100%;box-sizing:border-box;">
-    <img${imgIdAttr}
-        src="${escapeAttr(avatarSrc)}"
-        alt=""
-        loading="lazy"
-        decoding="async"
-        onerror="this.onerror=null;this.src='${placeholder}';"
-        style="width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#2a2a2a;display:block;"
-    />
+    ${coverHtml}
     <div style="flex-grow:1;min-width:0;overflow:hidden;text-align:left;">
         <div style="font-weight:700;font-size:16px;line-height:1.25;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(titulo)}</div>
         <div style="margin-top:4px;font-size:13px;line-height:1.3;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(meta)}</div>
