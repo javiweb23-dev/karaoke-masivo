@@ -196,19 +196,37 @@ async function fetchItunesResultado(artista, titulo) {
 }
 
 async function guardarEstadoPortadaRpc(cancionId, nuevaUrl) {
+    const idNumerico = parseInt(cancionId, 10);
+    if (!Number.isFinite(idNumerico)) {
+        throw new Error('cancion_id invalido: ' + cancionId);
+    }
     const valor = String(nuevaUrl ?? '').trim();
     if (valor !== '' && valor !== 'not_found' && !/^https?:\/\//i.test(valor)) {
         throw new Error('nueva_url invalida para RPC: ' + valor);
     }
-    const { error: rpcError } = await _supabase.schema('public').rpc('actualizar_portada', {
-        cancion_id: parseInt(cancionId, 10),
-        nueva_url: valor === '' ? '' : valor
-    });
-    if (rpcError) throw rpcError;
+    const params = {
+        cancion_id: idNumerico,
+        nueva_url: valor
+    };
+
+    let rpcError = null;
+    const intentoPublico = await _supabase.schema('public').rpc('actualizar_portada', params);
+    rpcError = intentoPublico.error;
+
+    if (rpcError && (rpcError.code === 'PGRST404' || rpcError.code === 'PGRST202')) {
+        const intentoDirecto = await _supabase.rpc('actualizar_portada', params);
+        rpcError = intentoDirecto.error;
+    }
+
+    if (rpcError) {
+        console.error('actualizar_portada rpcError:', rpcError);
+        throw rpcError;
+    }
+
     const { data: verificacion } = await _supabase
         .from('canciones')
         .select('id, cover_url, intentos_busqueda')
-        .eq('id', cancionId)
+        .eq('id', idNumerico)
         .maybeSingle();
     return verificacion;
 }
