@@ -91,6 +91,25 @@ input {
     text-align: center;
 }
 
+#searchInput {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 15px;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    line-height: normal;
+    outline: none;
+    text-align: center;
+    background-color: #fff;
+    color: #000;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
 .qr-modal {
     display: none;
     position: fixed;

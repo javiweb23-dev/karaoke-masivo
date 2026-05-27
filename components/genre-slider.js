@@ -36,28 +36,15 @@
         );
     }
 
-    function getPrimaryColor() {
-        return (
-            getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() ||
-            '#ff6600'
-        );
-    }
+    const CHIP_BASE =
+        'shrink-0 w-16 h-16 rounded-lg border text-[10px] leading-tight text-center flex items-center justify-center p-1 break-words hyphens-auto overflow-hidden font-semibold transition-all';
+    const CHIP_INACTIVE = 'bg-[#252525] border-[#444] text-[#ccc]';
+    const CHIP_ACTIVE =
+        'bg-white border-black text-black shadow-[0_2px_10px_rgba(0,0,0,0.45)] scale-105';
 
     function applyChipStyle(btn, active) {
-        const primary = getPrimaryColor();
-        if (active) {
-            btn.style.borderColor = primary;
-            btn.style.backgroundColor = primary;
-            btn.style.color = '#000';
-            btn.style.fontWeight = '700';
-            btn.setAttribute('aria-pressed', 'true');
-        } else {
-            btn.style.borderColor = '#444';
-            btn.style.backgroundColor = '#252525';
-            btn.style.color = '#ccc';
-            btn.style.fontWeight = '600';
-            btn.setAttribute('aria-pressed', 'false');
-        }
+        btn.className = `${CHIP_BASE} ${active ? CHIP_ACTIVE : CHIP_INACTIVE}`;
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     }
 
     function setActive(key) {
@@ -166,7 +153,7 @@
     }
 
     function buildChipHtml(label, key) {
-        return `<button type="button" data-genre-key="${escapeAttr(key)}" aria-pressed="false" class="shrink-0 w-16 h-16 rounded-lg border border-[#444] bg-[#252525] text-[#ccc] text-[10px] leading-tight text-center flex items-center justify-center p-1 break-words hyphens-auto overflow-hidden font-semibold transition-colors">${escapeHtml(label)}</button>`;
+        return `<button type="button" data-genre-key="${escapeAttr(key)}" aria-pressed="false" class="${CHIP_BASE} ${CHIP_INACTIVE}">${escapeHtml(label)}</button>`;
     }
 
     function bindControls() {
@@ -201,7 +188,7 @@
         root.innerHTML = `<div class="relative w-full flex items-center gap-1 mt-3">
 <button type="button" id="genre-scroll-prev" aria-label="Anterior" class="shrink-0 w-8 h-16 flex items-center justify-center rounded-lg bg-black/40 text-white hover:bg-white/10 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
 <div id="genre-slider-track" class="flex-1 min-w-0 overflow-x-auto flex gap-2 py-1 px-0.5 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-<button type="button" data-genre-key="" aria-pressed="false" class="shrink-0 w-16 h-16 rounded-lg border border-[#444] bg-[#252525] text-[#ccc] text-[10px] leading-tight text-center flex items-center justify-center p-1 font-semibold transition-colors">Todos</button>
+<button type="button" data-genre-key="" aria-pressed="false" class="${CHIP_BASE} ${CHIP_INACTIVE}">Todos</button>
 ${genres.map((genre) => buildChipHtml(genre, normalizeKey(genre))).join('')}
 </div>
 <button type="button" id="genre-scroll-next" aria-label="Siguiente" class="shrink-0 w-8 h-16 flex items-center justify-center rounded-lg bg-black/40 text-white hover:bg-white/10 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>

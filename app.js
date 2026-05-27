@@ -36,11 +36,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadBrandingByDj();
     setupShareQr();
     setupStickyOffsets();
+    setupEventListeners();
     GenreSlider.init('genre-slider-root', applyFilters);
     await loadSongsByDj();
     GenreSlider.update(allSongs);
     applyFilters();
-    setupEventListeners();
     setupListaCancionesDelegation();
     startLiveStatusTracking();
 });
@@ -915,21 +915,24 @@ function applyFilters() {
         const cleanG = normalizeFilterText(s.genre);
         const cleanNum = normalizeFilterText(String(s.number != null ? s.number : ''));
 
-        const matchesSearch =
-            term === '' ||
+        const matchesGenre = !genreKey || cleanG === genreKey;
+        if (!matchesGenre) return false;
+
+        if (term === '') return true;
+
+        return (
             cleanA.includes(term) ||
             cleanT.includes(term) ||
-            cleanG.includes(term) ||
-            cleanNum.includes(term);
-
-        const matchesGenre = !genreKey || cleanG === genreKey;
-
-        return matchesSearch && matchesGenre;
+            cleanNum.includes(term)
+        );
     });
     renderSongs(filtered);
 }
 
 function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (!searchInput || searchInput.dataset.filterBound === '1') return;
+    searchInput.dataset.filterBound = '1';
+    searchInput.addEventListener('input', applyFilters);
+    searchInput.addEventListener('keyup', applyFilters);
 }
