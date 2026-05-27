@@ -261,6 +261,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="components/catalog-import.js"></script>
     <script>
         const SUPABASE_URL = 'https://vqirrwlznzbooiwlksly.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_V9S8NC_f7Pn0dms86m3OFw_X5ficboj';
@@ -485,68 +486,28 @@
             pinInput.focus();
         }
 
-        function mapRowToSong(row) {
-            const numero = String(row.numero || row.number || row.id || '').trim();
-            const artista = String(row.artista || row.artist || '').trim();
-            const titulo = String(row.titulo || row.title || '').trim();
-            const genero = String(row.genero || row.genre || '').trim();
-            const idioma = String(row.idioma || row.language || '').trim().toLowerCase();
-            if (!numero || !artista || !titulo) return null;
-            return {
-                id_dj: currentDjId,
-                numero,
-                artista,
-                titulo,
-                genero,
-                idioma: idioma || 'español'
-            };
-        }
-
         async function importarCancionesDesdeArchivo(file) {
             if (!currentDjId) {
                 setStatus('No se detecto dj en la URL.', true);
                 return;
             }
-            setStatus('Procesando archivo...', false);
-            let rows = [];
             try {
-                const ext = (file.name.split('.').pop() || '').toLowerCase();
-                if (ext === 'csv') {
-                    const text = await file.text();
-                    const wb = XLSX.read(text, { type: 'string' });
-                    const sheet = wb.Sheets[wb.SheetNames[0]];
-                    rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-                } else {
-                    const buffer = await file.arrayBuffer();
-                    const wb = XLSX.read(buffer, { type: 'array' });
-                    const sheet = wb.Sheets[wb.SheetNames[0]];
-                    rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-                }
+                const result = await CatalogImport.importCatalogFromFile(
+                    _supabase,
+                    file,
+                    currentDjId,
+                    {
+                        onProgress: (msg) => setStatus(msg, false)
+                    }
+                );
+                setStatus(
+                    `Importacion completada. ${result.inserted} nuevas, ${result.updated} actualizadas (${result.total} filas).`,
+                    false
+                );
             } catch (e) {
-                setStatus('No se pudo leer el archivo.', true);
-                return;
+                const msg = e && e.message ? e.message : 'No se pudo importar el archivo.';
+                setStatus(msg, true);
             }
-
-            if (!rows.length) {
-                setStatus('El archivo esta vacio.', true);
-                return;
-            }
-
-            const songs = rows.map(mapRowToSong).filter(Boolean);
-            if (!songs.length) {
-                setStatus('No se encontraron canciones validas.', true);
-                return;
-            }
-
-            const { error } = await _supabase.from('canciones').upsert(songs, {
-                onConflict: 'id_dj,numero',
-                ignoreDuplicates: false
-            });
-            if (error) {
-                setStatus('Error al importar: ' + error.message, true);
-                return;
-            }
-            setStatus(`Importacion completada. ${songs.length} canciones procesadas.`, false);
         }
 
         function setupImporter() {
