@@ -14,6 +14,21 @@
     <link rel="icon" href="logo.png" type="image/png">
     <script>(function(){var d=(new URLSearchParams(location.search).get('dj')||'').trim().toLowerCase();var k=d?'color_personalizado_'+d:'color_personalizado';var c=localStorage.getItem(k);if(!c&&d)c=localStorage.getItem('color_personalizado');if(c)document.documentElement.style.setProperty('--primary-color',c);})();</script>
     <link rel="stylesheet" href="style.css?v=1.2">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            safelist: [
+                'relative', 'w-full', 'flex', 'items-center', 'gap-1', 'gap-2', 'mt-3',
+                'shrink-0', 'w-8', 'w-16', 'h-16', 'rounded-lg', 'bg-black/40', 'text-white',
+                'hover:bg-white/10', 'transition-colors', 'opacity-30', 'pointer-events-none',
+                'flex-1', 'min-w-0', 'overflow-x-auto', 'py-1', 'px-0.5', 'cursor-grab',
+                'cursor-grabbing', 'select-none', 'border', 'border-[#444]', 'bg-[#252525]',
+                'text-[#ccc]', 'text-[10px]', 'leading-tight', 'text-center', 'justify-center',
+                'p-1', 'break-words', 'hyphens-auto', 'overflow-hidden', 'font-semibold',
+                '[scrollbar-width:none]', '[-ms-overflow-style:none]', '[&::-webkit-scrollbar]:hidden'
+            ]
+        };
+    </script>
 </head>
 <body>
     <div class="header">
@@ -25,6 +40,7 @@
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="BUSCAR POR TÍTULO, ARTISTA O NÚMERO...">
+        <div id="genre-slider-root" aria-label="Filtrar por género"></div>
     </div>
     <div id="qrModal" class="qr-modal">
         <div class="qr-modal-content">
@@ -41,7 +57,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script src="app.js?v=3.9"></script>
+    <script src="components/genre-slider.js"></script>
+    <script src="app.js?v=4.0"></script>
 
     <script>
         if ('serviceWorker' in navigator) {

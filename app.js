@@ -36,7 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadBrandingByDj();
     setupShareQr();
     setupStickyOffsets();
+    GenreSlider.init('genre-slider-root', applyFilters);
     await loadSongsByDj();
+    GenreSlider.update(allSongs);
     applyFilters();
     setupEventListeners();
     setupListaCancionesDelegation();
@@ -476,6 +478,7 @@ async function loadSongsByDj() {
     if (result.error) {
         if (loading) loading.innerText = result.error.message || 'Error al leer las canciones. Refresca la pagina.';
         allSongs = [];
+        GenreSlider.update(allSongs);
         return;
     }
     allSongs = (result.data || []).map((song) => ({
@@ -903,6 +906,8 @@ function applyFilters() {
 
     const rawTerm = searchInput ? searchInput.value.trim() : '';
     const term = normalizeFilterText(rawTerm);
+    const genreKey =
+        typeof GenreSlider !== 'undefined' ? GenreSlider.getSelectedKey() : '';
 
     const filtered = allSongs.filter((s) => {
         const cleanA = normalizeFilterText(s.artist);
@@ -910,13 +915,16 @@ function applyFilters() {
         const cleanG = normalizeFilterText(s.genre);
         const cleanNum = normalizeFilterText(String(s.number != null ? s.number : ''));
 
-        return (
+        const matchesSearch =
             term === '' ||
             cleanA.includes(term) ||
             cleanT.includes(term) ||
             cleanG.includes(term) ||
-            cleanNum.includes(term)
-        );
+            cleanNum.includes(term);
+
+        const matchesGenre = !genreKey || cleanG === genreKey;
+
+        return matchesSearch && matchesGenre;
     });
     renderSongs(filtered);
 }
