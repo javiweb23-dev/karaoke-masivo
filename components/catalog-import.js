@@ -1,8 +1,9 @@
 (function (global) {
     const BATCH_SIZE = 400;
+    const UPSERT_CONFLICT = 'id_dj,artista,titulo';
 
-    function buildSongKey(artista, titulo) {
-        return `${String(artista ?? '').trim()}\u0001${String(titulo ?? '').trim()}`;
+    function songIdentityKey(idDj, artista, titulo) {
+        return `${idDj}\u0001${String(artista ?? '').trim()}\u0001${String(titulo ?? '').trim()}`;
     }
 
     function mapRowToSong(row, idDj) {
@@ -27,6 +28,14 @@
         return song;
     }
 
+    function dedupeSongsByIdentity(songs, idDj) {
+        const byKey = new Map();
+        songs.forEach((song) => {
+            byKey.set(songIdentityKey(idDj, song.artista, song.titulo), song);
+        });
+        return Array.from(byKey.values());
+    }
+
     async function parseCatalogFile(file) {
         const ext = (file.name.split('.').pop() || '').toLowerCase();
         let rows = [];
@@ -44,73 +53,14 @@
         return rows;
     }
 
-    async function fetchExistingIndex(supabase, idDj) {
-        const index = new Map();
-        let offset = 0;
-        const pageSize = 1000;
-        while (true) {
-            const { data, error } = await supabase
-                .from('canciones')
-                .select('id, titulo, artista')
-                .eq('id_dj', idDj)
-                .range(offset, offset + pageSize - 1);
-            if (error) throw error;
-            const chunk = data || [];
-            chunk.forEach((row) => {
-                index.set(buildSongKey(row.artista, row.titulo), row.id);
-            });
-            if (chunk.length < pageSize) break;
-            offset += pageSize;
-        }
-        return index;
-    }
-
-    function partitionSongs(songs, existingIndex) {
-        const inserts = [];
-        const updates = [];
-        const pendingNewKeys = new Map();
-
-        songs.forEach((song) => {
-            const key = buildSongKey(song.artista, song.titulo);
-            const existingId = existingIndex.get(key);
-            if (existingId) {
-                const payload = {
-                    id: existingId,
-                    id_dj: song.id_dj,
-                    numero: song.numero,
-                    artista: song.artista,
-                    titulo: song.titulo,
-                    genero: song.genero,
-                    idioma: song.idioma
-                };
-                if (song.cover_url) payload.cover_url = song.cover_url;
-                updates.push(payload);
-                return;
-            }
-            if (pendingNewKeys.has(key)) {
-                const idx = pendingNewKeys.get(key);
-                inserts[idx] = song;
-                return;
-            }
-            pendingNewKeys.set(key, inserts.length);
-            inserts.push(song);
-        });
-
-        return { inserts, updates };
-    }
-
-    async function runBatched(supabase, table, rows, mode) {
+    async function upsertBatches(supabase, songs) {
         let processed = 0;
-        for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-            const batch = rows.slice(i, i + BATCH_SIZE);
-            let error = null;
-            if (mode === 'insert') {
-                const res = await supabase.from(table).insert(batch);
-                error = res.error;
-            } else {
-                const res = await supabase.from(table).upsert(batch, { onConflict: 'id' });
-                error = res.error;
-            }
+        for (let i = 0; i < songs.length; i += BATCH_SIZE) {
+            const batch = songs.slice(i, i + BATCH_SIZE);
+            const { error } = await supabase.from('canciones').upsert(batch, {
+                onConflict: UPSERT_CONFLICT,
+                ignoreDuplicates: false
+            });
             if (error) throw error;
             processed += batch.length;
         }
@@ -127,36 +77,25 @@
         const rows = await parseCatalogFile(file);
         if (!rows.length) throw new Error('El archivo esta vacio.');
 
-        const songs = rows.map((row) => mapRowToSong(row, idDj)).filter(Boolean);
-        if (!songs.length) throw new Error('No se encontraron canciones validas.');
+        const parsed = rows.map((row) => mapRowToSong(row, idDj)).filter(Boolean);
+        if (!parsed.length) throw new Error('No se encontraron canciones validas.');
 
-        if (typeof hooks?.onProgress === 'function') {
-            hooks.onProgress('Verificando duplicados...');
-        }
-
-        const existingIndex = await fetchExistingIndex(supabase, idDj);
-        const { inserts, updates } = partitionSongs(songs, existingIndex);
+        const songs = dedupeSongsByIdentity(parsed, idDj);
 
         if (typeof hooks?.onProgress === 'function') {
             hooks.onProgress('Guardando en Supabase...');
         }
 
-        const inserted = inserts.length
-            ? await runBatched(supabase, 'canciones', inserts, 'insert')
-            : 0;
-        const updated = updates.length
-            ? await runBatched(supabase, 'canciones', updates, 'upsert')
-            : 0;
+        const processed = await upsertBatches(supabase, songs);
 
         return {
-            total: songs.length,
-            inserted,
-            updated
+            total: parsed.length,
+            processed,
+            unique: songs.length
         };
     }
 
     global.CatalogImport = {
-        buildSongKey,
         mapRowToSong,
         importCatalogFromFile
     };
